@@ -1,0 +1,35 @@
+\chapter{Specifications}
+This chapter contains the specifications for the blockchain system to be implemented. 
+
+The blockchain will be permissioned, with a central authority, e.g. the project owner, validating which nodes are allowed to join the network. The blockchain will not be completely private, but rather a consortium where all the nodes allowed access to the network are participating in the validation of new blocks. To avoid malicious nodes, or other unwanted participants in the network, the project owner also handles the distribution of private and public keys used for signing transactions. By having a central authority control key distribution, it is possible to keep a record of user identities corresponding to the keys. 
+
+(An alternative approach for accepting new nodes in to the network, is to make it part of the consensus model. For instance, say the network is started by an initial group of nodes. If a new node is to be introduced into the network, M of N nodes must validate the node before it can enter the network. This could work in a system such as a microgrid, where participants are physically close, possibly acquaintances in real life, and the system is finite. Key distribution would then be handled differently e.g. by a key generating function. This potentially provides higher user privacy, which might not be ideal in such a system.)
+
+Each new block will contain all pending transactions. The transactions will be stored in a merkel tree, to save space in the block header. The merkel tree is also used to verify transactions, e.g. by ensuring that no tokens are used for double spending. %TODO
+Each block/transaction contains a timestamp to help prevent double spending of tokens or double selling of electricity(?)%TODO
+
+The consensus algorithm is some form of Byzantine Fault Tolerance (TBA) where M of N nodes must agree before a block is validated. As previously mentioned, all nodes in the network participate in the consensus process of validating new blocks. This is to prevent centralization of the blockchain. Since the blockchain is not public, there is no reason to rely on cryptoeconomics for incentives to keep the blockchain correct. The users have already been approved, so there is little to no risk of an attack. BFT requires less computing power than PoW or PoS and can also be implemented to perform much faster transactions. %Uryddig
+
+The current electricity price is visible to the consumers/prosumers at all times, and is updated every minute. Payment for consumed electricity will be handled by consumers making deposits into an account. Deposits will be made with actual currency (e.g. USD or NOK) and be converted into tokens (not to be confused with cryptocurrency), where the token value directly correlates to value of the currency with minute resolution. The tokens can at any point be withdrawn from the account. Tokens are transferred from consumer to producer when electricity is bought by consumer. 
+
+A consumer signs a contract with a producer/prosumer for a given amount of time, e.g. a month. The consumer can at any time decide how much electricity they want to buy, or if the want to buy anything at all. Fluctuations in price will likely influence this decision. Once a consumer signs a contract from one producer/prosumer, it cannot sign a new contract with someone else. However, it can opt out of using the electricity for a period by e.g. using a battery, or simply using less energy for a period of time, if it is expensive. This might help regulate pricing if it becomes too high due to high demands. 
+
+To ensure precise transactions of tokens/electricity, smart contract functionality is used. A consumer puts tokens into a contract with limitations on how much electricity they want to buy and at which prize. If current electricity price matches the limitations, the computing node (virtual machine) automatically "forwards" the right amount of energy to the right node, and the tokens in return. The contract locks the tokens until electricity has been consumed. In case of a prosumers/producers failure to provide electricity, tokens are transferred back to consumer. This functionality prevents double spending of tokens and double selling of electricity.
+
+The contracts will be stored in the blockchain, and automatically executed when the right conditions are met. A token contains a state indicating whether it is locked in a smart contract or not. An important reason for using smart contract functionality is that there are two assets being transferred in this system: tokens and electricity. In a cryptocurrency blockchain with only one asset, the sender of the asset initiates the transaction. As a result of the bi-directional transfer of assets, the smart contract is used to ensure that neither side can withdraw from the transaction when it is in progress. 
+
+TODO: messaging in system, user identification, ... 
+
+The implementation of this system is focused around the software; the hardware is out of scope. However, some form of computer is needed to monitor the microgrid, as well as running a virtual machine for validation of blocks, creation and execution of smart contracts, and running and monitoring the blockchain. For the purpose of this project, these features will be simulated.
+
+
+%Unlike bitcoin, there is no single asset that can be followed through out the blockchain. The asset of interest is electricity, which is not reusable. 
+
+%No point in mining blocks, as there is no currency to create. Each participant in the network runs a virtual machine that takes care of validation of blocks, smart contracts, and monitors the blockchain. 
+
+%Public/private cryptographic key that works as digital signatures in transactions. Also validates that electricity is sold/consumed by the right node. Public key also works as the address of that particular node.  
+
+%Messages in network can be broadcasted or sent to specific nodes (based on address) %How to send messages in simuation? TCP w/ ports?
+
+%Possible to work in the state of a system/nodes somewhere?
+

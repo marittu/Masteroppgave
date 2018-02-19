@@ -1,0 +1,301 @@
+\chapter{Background and Related Work}
+%REMEMBER FIGURES AND TABLES!!
+\section{Microgrids}
+%As the length of power lines is the main source of energy loss, microgrids technology is focused on local use of renewable sources, as a result there is no need to transport energy over long distances that reduces losses \cite{Microgrid_konashevych}
+
+% is hypothesized that the blockchain technology is the most effective solution for the task of automated (smart) management of interaction within such microgrids, because the blockchain itself was designed to the distributed cooperation of the large quantity of users in a decentralized manner. As a result, there is no need to maintain centralized authorities/corporations or any other relevant intermediaries to manage such grids \cite{Microgrid_konashevych}
+
+%Local transactions keep profits within the community and encourage reinvestments in additional renewable generation. An information technology that uses vast amounts of energy contradicts the sustainability principles of microgrid energy markets. \cite{Brooklyn_Mengelkamp}
+
+%smart grid is featured with many attractive characteristics, e.g., self-monitoring, self-healing, remote check, pervasive control, and more customer choices [6]–[9]. Smart grid is expected to be the next generation of power system. \cite{Li_merkel_smart}
+
+\section{Blockchain}
+Blockchain is a decentralized database, distributed over a network of nodes. Transactions in the network are stored in blocks which are linked together as a chain, creating the blockchain. It was first introduced by Satoshi Nakamoto with the Bitcoin application \cite{Nakamoto_bitcoin}.
+In the following sections of this chapter, some key features about blockchains, the technology behind blockchains and, their usage will be analyzed and discussed. 
+
+\subsection{The Blockchain Basics}
+The blockchain is primarely used to transfer assets between users. In contrast to previous transaction methods, there is no need for trust between the participants of the transaction, nor the need of a trusted third-party institution, like a bank or government. The trust lies in the system as a whole, and the mathematical functions behind it, and not the individual participants \cite{Nofer}. Due to the decentralization of the network, there is no single-point-of-failure, as the database is duplicated in every node of the network. If a new user enters the network, or if they have been offline for a while, they can obtain the most recent version of the blockchain by querying the network multiple times, until they are convinced they have the correct version. 
+
+The below description of a blockchain is based on the Bitcoin implementation. There are many variations of blockchain implementations, due to public/private configurations, consensus models etc. These differences will be described later in the chapter.
+
+When a node transfers an asset to another node, it creates a transaction. The transaction contains: one or more inputs; one or more outputs; and a digital signature. Inputs are previously received and unspent outputs, containing the amount of an asset. Multiple inputs can be added together to create a larger transaction. The inputs are used completely, so if the amount does not add up to the wanted output, multiple outputs, specifying the amount in each, can be used so that the change is sent back to the owner. This is because transactions must reference an output, and each output can only be referenced once. Thus, the exact ownership of every asset can be pinpointed to a user in the network, based on the previous transactions. In order for a transaction to occur, it must be proved that the asset has not been previously spent by the current owner. Thus, there is no way to double spend assets.
+
+Transactions are validated through digital signatures, proving the authenticity of a messaged, by using public and private keys. Each node can obtain a random private key. Based on this, a public key is generated from an Elliptic Curve Digital Signature Algorithm (ECDSA) %\cite{•}.  
+The recipient node sends the hash of its public key to the sending node. The public key, together with the message is hashed together, and used to create a digital signature, thus providing a unique signature for every transaction. The transaction can then be claimed by the node in possession of the corresponding private key. Thus, in order to use a previously obtained output as an input, it must be verified by the node's private key. The use of digital signatures ensures that transactions can traverse the network without being altered, as even the smallest alteration will cause a signature to no longer be valid. Since every transaction is visible to every node on the network, anonymity is important as it becomes (nearly) %\cite{•} 
+impossible to find the true identity of the owner. A new key pair can be generated for every transaction to increase anonymity.
+
+A miner stores multiple pending and unconfirmed transaction together to create a block. The block consists of the transactions, as well as the block header. The block header usually contains: a reference to the previous block in the chain, namely the hash of the previous block; a timestamp for when the new block is created; the merkel root of the merkel tree containing all the transactions in this block; and  a nonce and a target used to calculate the hash of the new block. The merkel tree and how the hash of a block is found, will be discussed later in the chapter.
+
+When the hash of the new block is found, the block is broadcasted to the rest of the network. Every node on the network validates the block, before they start working on the next block. If several miners find the solution to the next block at the exact same time, a fork is created. 
+%Picture of block, header and chain. Picture of fork 
+A fork means that there exsists two (or more) different versions of the blockchain in the network. Due to network latencies, nodes in the network will receive different broadcasted messages at differend times. Therefore, nodes might have different versions of the blockchain. The miners start working on the next block based on the one they received first, while storing the other version it case that fork becomes longer \cite{Nakamoto_bitcoin}. The fork is resolved when one side of the fork becomes longer than the other(s), which will most likely happen when the next block is created. The side with the longest chain always wins because it is backed by the most work. All the nodes in the network immediately look to the longest chain as the valid version of the blockchain. The transactions in the discarded block go back into the pool of the pending transactions, waiting to be mined in a block. Once a transaction is part of the blockchain, it is irreversible. Due to the hash functions, even the slightest alteration in a transaction will be detected, and the alterations will be deemed as non-valid. Thus, there is no way to change or revert a transaction that has already happened. The blockchain is not modifiable, it is append only. 
+
+%More on double spending in chain?
+
+%signatures to verify transactions enabled by  Public and private keys - theft of key more on \cite{Ethereum_visions}
+
+
+%\cite{Zheng_overview} :Each node has to store all transactions to validate them on the blockchain because they have to check if the source of the current transaction is unspent or not. 
+
+
+%\cite{Nofer} - track exact ownership of every asset. Network persists even if certain nodes break down or go offline. Trust system as a whole - not individual participants. Increase user security and privacy when third parties become obsolete. 
+
+% blockchains are not necessary; they are convenient. Useful because of availability, uptime, apps(?) \cite{Ethereum_visions} 
+
+%As an additional firewall, a new key pair should be used for each transaction to keep them from being linked to a common owner. Some linking is still unavoidable with multi-input transactions, which necessarily reveal that their inputs were owned by the same owner. The risk is that if the owner of a key is revealed, linking could reveal other transactions that belonged to the same owner. Nodes are not going to accept an invalid transaction as payment, and honest nodes will never accept a block containing them. An attacker can only try to change one of his own transactions to take back money he recently spent. nder hopes it will be too late. The receiver generates a new key pair and gives the public key to the sender shortly before signing. This prevents the sender from preparing a chain of blocks ahead of time by working on it continuously until he is lucky enough to get far enough ahead, then executing the transaction at that moment. Once the transaction is sent, the dishonest sender starts working in secret on a parallel chain containing an alternate version of his transaction \cite{Nakamoto_bitcoin}
+
+\subsection{Private, Public and Consortium Blockchains}
+Blockchains are usually divided into three different categories, depending on the way they are governed. \cite{Ethereum_pub_priv} %Cite
+Public blockchains, like Bitcoin, is a blockchain where anyone is free to participate, and is completely decentralized. Private blockchains are more centralized with e.g. a single organization controlling the blockchain. A consortium blockchain is a hybrid between the two, where participants must be authorized, but does not have a single, central authority controlling it. Another, and wider classification is permissioned and permissionless blockchains. These are categorized depending on whether the blockchain is open to anyone or if some form of permission is required for access to the blockchain. Public blockchains are categorized as permissionless, while private and consortium blockchains fall under the category of permissioned. The three main categories will be further discussed below.
+
+
+\subsubsection*{Public Blockchains}
+A public blockchain is completely unregulated. It is open to anyone that wishes to read it; transactions are completely transparent. It is also open to anyone wishing to make transactions or participate in the consensus process for validating blocks - making it fully decentralized \cite{Ethereum_pub_priv}. The only requirement is a valid transaction. 
+
+Public blockchains rely heavily on cryptoeconomics for security in an otherwise low-trust environment. %/cite
+Cryptoeconomics is described as \enquote{\textit{a combination of economic incentives and cryptographic verification using mechanisms such as proof of work or proof of stake, following a general principle that the degree to which someone can have an influence in the consensus process is proportional to the quantity of economic resources that they can bring to bear}} \cite{Ethereum_pub_priv}. 
+
+The most important innovation from public blockchains, is the problem of who transmits first and the issue of double spending %Elaborate...
+Additional benefits of the openness of a blockchain includes the resistance to censorship. A single node or a group of nodes, provided they do not control a big enough (depending on the consensus model) portion of the network, cannot keep transactions out of the blockchain. 
+
+Public blockchains can grow quite large, and posses huge amounts of processing power, combined. This computational capacity can in turn be used for ... %find examples
+
+As mentioned, public blockchains rely on cryptoeconomics which in turn requires computationally heavy consensus models. Proof of Work (PoW) is the most common protocol used to reach consensus in a public blockchain. %cite
+PoW has its drawbacks, including vast amounts of computing power required, especially in the Bitcoin blockchain %cite. 
+
+
+
+%No change in data - not economically incentive 
+%Public completely unregulated - ref bitcoin and market fluctuation
+%\cite{Ethereum_pub_priv} : a public blockchain is a blockchain that anyone in the world can read, anyone in the world can send transactions to and expect to see them included if they are valid, and anyone in the world can participate in the consensus process. Public advantages: protect users from developers, reduces the problem of who transmits first 
+
+
+\subsubsection*{Private Blockchains}
+
+Trusted parties 
+Lost identification credentials - private keys
+Reverse verified transactions in event of e.g. system error, fraudulent activity, mistake in recipient address. 
+Reduced access lowers risk of outsider attack    
+Benefits of blockchain require some for of mistrust between users, otherwise a shared database might be a better solution
+Developers might change system without the users consensus 
+Key issuing from e.g. government to be allowed participation - loses part of the aspect of being independent from third parties. 
+Ability to revert transactions, e.g. property ownership in legal dispute 
+Trust comes from being trusted to participate in verification
+No single point of failure, as not dependent on one single computer
+Cheaper due to no transaction fees 
+Little or no chance of 51\% attacks
+%Private vs Shared database 
+%Ability to reverse transactions made by owner in private blockchain 
+%A private blockchain should not be owned or controlled by one entity, this defeats the whole purpose of a blockchain, even if you want some form of database that is immutable and cannot be hacked. (?) Fully private - want some form of consortium instead  
+%In a private blockchain, by contrast, operators can choose to permit only certain nodes to perform the verification process, and these trusted parties would be responsible for communicating newly verified transactions to the rest of the network. The responsibility for securing access to these nodes, and for determining when and for whom to expand the set of trusted parties, would be a security decision made by the blockchain system operator.
+%\cite{Ethereum_pub_priv} : a fully private blockchain is a blockchain where write permissions are kept centralized to one organization. Read permissions may be public or restricted to an arbitrary extent. Likely applications include database management, auditing, etc. internal to a single company, and so public readability may not be necessary in many cases at all, though in other cases public auditability is desired. the fundamental value of blockchains in a fully private context, aside from the replicated state machine functionality, is cryptographic authentication, and there is no reason to believe that the optimal format of such authentication provision should consist of a series of hash-linked data packets containing Merkle tree roots. Private advantages: possible to change rules and revert transactions, known validators – no risk of 51% attack, cheaper transactions, easier consensus algorithms leading to shorter block times, restricted read permissions lead to greater privacy. 
+%\cite{Thompson_private} "Private blockchains provide higher leveles of error checking and transaction validity than regular shared databases." "Distributed ledgers are shared databases with access protection rights, with defined rules on what types of changes can be performed by what entities." the security promises of distributed ledgers and private blockchains are only as good as the honesty of the entities validating the transactions. There are no mathematical guarantees behind the irreversibility of transactions in a private blockchain. still make use of cryptography and data structures like Merkle trees to ensure non-valid transactions aren’t added to the blockchain <-(also from etherum blog)-> Private blockchains scale significantly better than public blockchains and the network parameters, such as network congestion and transaction fees are known in advance 
+
+
+\subsubsection*{Consortium Blockchains}
+ %\cite{Ethereum_pub_priv} : a consortium blockchain is a blockchain where the consensus process is controlled by a pre-selected set of nodes; for example, one might imagine a consortium of 15 financial institutions, each of which operates a node and of which 10 must sign every block in order for the block to be valid. The right to read the blockchain may be public, or restricted to the participants, and there are also hybrid routes such as the root hashes of the blocks being public together with an API that allows members of the public to make a limited number of queries and get back cryptographic proofs of some parts of the blockchain state. These blockchains may be considered “partially decentralized”. 
+
+
+%Anonymity in private/public
+%\cite{Thompson_private} "Private blockchains provide higher leveles of error checking and transaction validity than regular shared databases." "Distributed ledgers are shared databases with access protection rights, with defined rules on what types of changes can be performed by what entities." the security promises of distributed ledgers and private blockchains are only as good as the honesty of the entities validating the transactions. There are no mathematical guarantees behind the irreversibility of transactions in a private blockchain. still make use of cryptography and data structures like Merkle trees to ensure non-valid transactions aren’t added to the blockchain <-(also from etherum blog)-> Private blockchains scale significantly better than public blockchains and the network parameters, such as network congestion and transaction fees are known in advance 
+
+
+%http://www.gjermundbjaanes.com/private-blockchains-and-how-to-make-them-work/ reasons for using private or public blockchains and  \cite{Zheng_overview}  - table to summerize subsection?
+
+
+%\cite{hbr_safe} - communication between nodes determine security - well connected nodes recieve information faster - handling unactive nodes? - ban nodes providing incorrect information to uphold integrity - consensus when nodes go offline and come back. 
+
+\subsubsection*{Summary}
+In conclusion, the type of blockchain most beneficial for each applications will vary from industry to industry and from application to application. Public blockchains are most beneficial for individual users, as there is no need to trust anyone. Private and consortium blockchains are more beneficial to organizations or companies, as they lower cost and increase speed of transactions.
+
+
+\section{Merkel Tree}
+A merkel tree is a (binary) tree where all the leaf nodes are paired and hashed until a single root hash remains, which is the merkel root. Each transaction is appended to the merkel tree as a leaf node. The merkel root is stored in the header of a block in the blockchain.   
+
+SPACE SAVING
+Also used by private blockchains to ensure only valid transactions are added to the blockchain
+%Figure
+
+%\cite{Thompson_private} 
+Common in peer-to-peer systems including blockchains. Authenticate receiving data as part of file (etc.), verify transaction (that has happened previously). No need to store entire history - saves space and time. Merkel data created out of transaction data in each block. Enables auditing transactions in logarithmic time opposed to linear time.   
+
+%\cite{Clifton_merkle Provides digital signature for authentication of message. Provides consistency verification, data verification and data synchronization 
+%Significantly reduces the amount of data that a trusted authority has to maintain to proof the integrity of the data.
+%Significantly reduces the network I/O packet size to perform consistency and data verification as well as data synchronization.
+%Separates the validation of the data from the data itself -- the Merkle tree can reside locally, or on a trusted authority, or can itself reside on a distributed system (perhaps you only maintain your own tree.)  Decoupling the "I can prove the data is valid" from the data itself means you can implement the appropriate and separate (including redundant) persistence for both the Merkle tree and the data store.
+%Merkle trees provide a means of proving that integrity / validity of your data.
+%Merkle trees require little memory / disk space and proofs are computationally easy and fast.
+%Merkle tree proofs and management requires only a very small and terse amount of information to be transmitted across a network.
+%Used where trees that are append only and not updated 
+
+%\cite{log_proofs} 
+A Merkle consistency proof lets you verify that any two versions of a log are consistent: that is, the later version includes everything in the earlier version, in the same order, and all new entries come after the entries in the older version. If you can prove that a log is consistent it means that no certificates have been back-dated and inserted into the log, no certificates have been modified in the log, and the log has never been branched or forked.
+
+A Merkle audit proof lets you verify that a specific certificate has been included in a log. This is a critical verification task because the Certificate Transparency model demands that all TLS clients reject any certificates that do not show up in a certificate log.
+
+\section{Consensus Models}
+Consensus models are important in distributed systems, in order for ... correct version of the shared ledger. 
+%\cite{Zheng_overview}
+%Table to summerize this section
+Reward for mining
+Safety, liveliness, fault-tolerance
+Two types of fault-tolerance - fail-stop and Byzantine faults 
+
+%The incentive can also be funded with transaction fees. If the output value of a transaction is less than its input value, the difference is a transaction fee that is added to the incentive value of the block containing the transaction. Once a predetermined number of coins have entered circulation, the incentive can transition entirely to transaction fees and be completely inflation free \cite{Nakamoto_bitcoin}.
+
+%\cite{Li_pos} : To reach distributed agreement, the blockchain relies on consensus protocols which ensure that all nodes in the network share a consistent view on a common distributed ledger. 
+
+
+\subsection{Proof of Work}
+Computationally expensive
+Requires very much energy
+Variable called nonce, which is adjusted in order to find a hash matching requirements of another variable called target
+Consensus used in Bitcoin
+untrustworthy peers wanting to modify past blocks have to work harder than peers wanting to add new blocks. 
+Target value determines difficulty, the lower the target value the more attempts are needed on average to find ha hash beneath the target threshold. 
+Mining to generate more crypto currency not needed or desirable in this use case 
+Brute force
+Good scalability for participating nodes and completely decentralized 
+Slow, energy waste, latency 
+%The proof-of-work also solves the problem of determining representation in majority decision making. If the majority were based on one-IP-address-one-vote, it could be subverted by anyone able to allocate many IPs. Proof-of-work is essentially one-CPU-one-vote \cite{Nakamoto_bitcoin}. 
+
+Hardware centralization - ASCI
+
+%\cite{decentralized_energy_trading} : to generate a block, a node collects pending transactions, hash them into a hash of a merkle tree root, then along with other data iteratively hash this data set until it results in a hash that is less than or equal to a predefined target value. Target is a hash value that serves as a threshold, below which a block header must be hashed to generate a block. Target is a 256 bit number with special k numbers of zero significant digits, which constructs PoW difficulty, requires on average 2k attempts before the puzzle is solved. Finding proof for a given target is a linear function, therefore the lower the target value is, more hashing attempts are required. Proof-of-work is a probabilistic iterative procedure, hence to a certain extent decreases a chance to generate blocks at the same time. A probability of finding nonce of proof H for a given target T is: P(H ≤ T) = T /(2^256)
+
+
+\subsection{Proof of Stake}
+Tries to solve the energy problem in proof of work
+Rich get richer
+More assets in network - more likely to be chosen as validator for mining - reward
+Centralized
+
+Casper
+Tendermint
+no coin creation (mining) exists in proof of stake. Instead, all the coins exist from day one, and validators (also called stakeholders, because they hold a stake in the system) are paid strictly in transaction fees.
+
+%\cite{Li_pos} : PoS leverages virtual resources such as the stake of a node in order to perform leader election and maintain consensus in the network. Since the mining resources are virtual, PoS-based consensus process is instant and results in negligible costs. Problems with things like nothing at stake and long-range attacks  The former attack allows the nodes to mine conflicting blocks without risking their stake which increases the number of forks in the system as well as the time to reach consensus in the network. The latter attack (commonly referred to as history attack) consists of an adversary that aims to alter the entire history of the blockchain starting from early blocks (even from the genesis block). This can be achieved when e.g., the attacker acquires the private keys of older accounts which no longer have any stake at the moment, but that have acquired majority stake at previous block height h; the attacker can construct a fork starting from block h leveraging these accounts. consensus protocol dedicated for open blockchains— which feature open membership allowing any node to join the network. dedicated for open blockchains— which feature open membership allowing any node to join the network. PoS defines a group of validators whose task is to propose the next transaction(s) to be included in the ledger. 
+
+
+%\cite{pos_weak} flaws in proof of stake
+
+\subsection{Proof of Elapsed Time}
+
+
+\subsection{Byzantine Fault Tolerance}
+Byzantine Fault Tolerance is a form of "leader-follower" protocol. Private blockchains do not utilize proof of work as a consensus model. Rather, a Byzantine Fault Tolerance protocol can be used to ensure valid transactions. Requires more than one node in network 
+
+Ripple and Stellar use open-ended (in regards to node participation) Byzantine fault tolerance as a consensus model
+Ripple requires each node to have a list of trusted nodes, each nodes list must have a 40\% overlap with other nodes in the network. Consensus in multiple rounds
+
+Support high transaction rates
+Low scalability. Over 20 nodes causes huge overhead in messages 
+
+%Cross fault-tolerance
+
+%PoET offers some benefits over Practical Byzantine Fault Tolerance (PBFT), a type of consensus algorithm used by Hyperledger, Stellar and others, he said. For one, it scales to a larger number of nodes and is more reliable since it works when larger numbers of nodes aren't available.
+ 
+ %http://docs.neo.org/en-us/node/whitepaper.html
+ %http://sammantics.com/blog/2016/7/27/chain-1
+ 
+ \subsection{Summery of Consensus Models}
+This is perhaps the most challenging aspect in order to create a blockchain. Different types of blockchains require different types of consensus models.  
+At this point, there does not exist a single best consensus model. Limitations and restrictions are present in regards to power consumption, scaling, security and transaction speed. These factors will be further discussed in the following section. 
+
+\section{Security and Weaknesses in Blockchain technology}
+%51 percent attacks https://learncryptography.com/cryptocurrency/51-attack - older blocks more secure, newer blocks more vulnerable to double spending attacks achieved by mining faster than the rest of the network
+%Scaling
+%Speed
+%Energy consumption
+%No possibility to revert transactions in public
+%Sybil attacks
+%Double spending and rejecting transaction (51%)
+
+%\cite{Chakravarty_guide} : Public Blockchain, which ensures anonymity in identity but transparency in transactions. However, maintaining both anonymity and transactional transparency comes at a cost — it lowers the bandwidth between nodes and the entire blockchain must be duplicated by all nodes locally to be aware of the current state of the chain. 
+
+%\cite{Zheng_overview} :  blockchain cannot guarantee the transactional privacy since the values of all transactions and balances for each public key are publicly visible. Besides, the recent study [41] has shown that a user’s Bitcoin transactions can be linked to reveal user’s information. Moreover, Biryukov et al. [11] presented a method to link user pseudonyms to IP addresses even when users are behind Network Address Translation (NAT) or firewall. Selfish mining and stubborn mining
+
+%https://arxiv.org/pdf/1703.03779.pdf ponzi on ethereum
+\section{Blockchain Applications}
+%Dash?
+%Hyperledger
+\subsection{Bitcoin}
+Black market because of openness when everyone can read and write transactions
+Centralized the mining to countries with cheap electricity - vulnerable to changes in policy on electricity subsidies %\cite{hbr_safe}
+
+On average 10 minutes per block to avoid double spending, adjust difficulty to keep this pace. Fully verification takes about 1-2 hours due to possibility of forks - possibility of \enquote{double spending}
+Wallets
+One block contains 1 MB worth of transaction data
+
+We define an electronic coin as a chain of digital signatures. 
+
+Speed of transfer
+TCP/IP email analogy
+Transaction chain - history of ownership and blockchain - transaction ordering
+
+%\cite{economist_chain}: cap the size of a block at one megabyte, or about 1,400 transactions, it can handle only around seven transactions per second, compared to the 1,736 a second Visa handles in America. Blocks could be made bigger; but bigger blocks would take longer to propagate through the network, worsening the risks of forking
+
+%\cite{Zheng_overview} : due to the original restriction of block size and the time interval used to generate a new block, the Bitcoin blockchain can only process nearly 7 transactions per second, which cannot fulfill the requirement of processing millions of transactions in real-time fashion. Meanwhile, as the capacity of blocks is very small, many small transactions might be delayed since miners prefer those transactions with high transaction fee
+
+\subsection{Ethereum}
+%Smart Contracts - establishes rules between peers 
+Blocks can contain code which becomes a smart contract
+%\cite{economist_chain} : Ethereum’s distributed ledger can deal with more data than bitcoin’s can. And it comes with a programming language that allows users to write more sophisticated smart contracts, thus creating invoices that pay themselves when a shipment arrives or share certificates which automatically send their owners dividends if profits reach a certain level
+%https://www.ethereum.org/
+New blocks every 15 seconds
+Build apps on ethereum or access and interact with smart contracts 
+Currently uses PoW but plan in changing to PoS
+%"Ethereum would never be possible without bitcoin—both the technology and the currency—and we see ourselves not as a competing currency but as complementary within the digital ecosystem. Ether is to be treated as "crypto-fuel", a token whose purpose is to pay for computation, and is not intended to be used as or considered a currency, asset, share or anything else."
+Turing-complete programming language for smart contracts
+%https://github.com/ethereum/wiki/wiki/White-Paper#a-next-generation-smart-contract-and-decentralized-application-platform
+
+Three types of applications on Ethereum platform; financial, semi-financial and non-financial. 
+
+\subsubsection*{Smart Contracts}
+Problem that they might not be hack safe 
+
+\subsection{Hyperledger}
+Hyperleger is an open-source platform for blockchains hosted by the Linux Foundation. It consists of many project, two of which will be further evaluated here. Fabric and Sawtooth. 
+Consortium with identities verified and registered
+Linux foundation
+Permissioned blockchain
+Smart contracts
+Two consensus models - PBFT and SIEVE
+Not a cryptocurrency 
+Sawtooth, Fabric, Iroha, Burrow
+
+
+%\subsection{Commercial Blockchains}%Not descriptive enough
+%IBM
+%Azur
+
+\section{Related work}
+%The blockchain technology can be used to create an application for managing relations within the microgrid and will perform the following tasks: authentication of smart controllers which register data of produced and consumed electricity and transfer it to the blockchain; each smart controller has its own “wallet”/“address” in the blockchain, which is the open key of a certificate; the private key is the key to access to the wallet; wallet stores information of produced and consumed energy and shows the current stock of energy; wallet allows a participant to make peer-to-peer transaction with other participant of the microgrid; virtual currency provides equivalents of volumes and allows free market prices; free market in the form of stock exchange allows users to make deals on buying-selling electricity directly with each other; deals on market are done in the form of self-executed contracts, also known as “smart contracts”, which provides automatization on accounting and payments; those consumers who consume planned volumes of energy reduce their cost on electricity; and vice versa, those who overconsume the electricity, pay extra money; connection to central grid and reserve stock allows to cover the loss during an emergency and compensate the variability of renewable energy sources. \cite{Microgrid_konashevych}
+
+%While data consistency and security are inherent traits of blockchain technology, a secure connection from the market participants’ smart meters, which measure and monitor energy generation and demand, to the blockchain is necessary. \cite{Brooklyn_Mengelkamp}
+
+%If only trusted community members participate in the market, an identity-based consensus mechanism can be sufficiently secure. Identity-based consensus mechanisms are hash-based user authentication mechanisms that rely on every agent having a single identity that is confirmed. It is assumed that no agent can register additional identities. Thus, instead of using computational costly consensus mechanisms relying on complex cryptographic problems to prevent the dissemination of corrupted information, identity mechanisms use the simple, although hashbased, verification of the agent’s identity to prevent corrupted agents from entering the system. In a microgrid market, identities could be verified and assigned by a centralized entity (e.g. government) before providing agents with the required market access. Re-verification by the consensus mechanism then relies on the assigned identities. \cite{Brooklyn_Mengelkamp}
+
+%In New York state, neighbors are testing their ability to sell solar energy to one another using blockchain technology. In Austria, the country’s largest utility conglomerate, Wien Energie, is taking part in a blockchain trial focused on energy trading with two other utilities. Meanwhile in Germany, the power company Innogy is running a pilot to see if blockchain technology can authenticate and manage the billing process for autonomous electric-vehicle charging stations. \cite{hbr_grid}
+
+\cite{NRGcoin_Mihaylov} : Current trading of renewable energy without blockchain – pay ahead. NRGcoins directly correlating to energy transferred to grid – pay for use Calculations for buying and selling energy. First to propose this kind of system?
+
+
+https://solarcoin.org/en/frequently-asked-questions
+Interbit BTL
+Innogy
+
+\subsection{Brooklyn Microgrid}
+% in a blockchain microgrid project in Brooklyn, N.Y., each participant trading electricity had to invest in a computer with a blockchain “node” in order for their homes with solar panels to be able to sell power to neighbors. The blockchain network manages and records the transactions with little human interaction. The “nodes” in the computers are needed to validate and share the information to minimize the possibility of downtime or interference with the data. The more data that needs to be bundled into “blocks” and passed along, the more computing power they need. \cite{hbr_grid}
+
+Virtual/physical grid %: A distinctive difference exists between a physical microgrid, which consists of an actual power distribution microgrid, and a virtual microgrid, which simply links the microgrid participants over an information system. Contrary to a physical microgrid, virtual microgrids cannot physically decouple from the superordinate grid \cite{Brooklyn_Mengelkamp}
+Based on ethereum, but not scalable so making its own
+
+%https://motherboard.vice.com/en_us/article/d7y7n7/transactive-grid-ethereum-brooklyn-microgrid first transaction
+
+\section{Other Use Cases}
+Land ownership
+Sharing economy
+Transferring money (abroad)
+Intellectual property rights - music, kodak etc.  
+Crowd funding via smart contracts 

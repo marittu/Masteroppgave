@@ -1,0 +1,65 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\defcounter {refsection}{0}\relax 
+\select@language {english}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{Abstract}{i}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{Sammendrag}{ii}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{Table of Contents}{iv}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {1}Introduction}{1}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {2}Background and Related Work}{2}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.1}Microgrids}{2}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.2}Blockchain}{2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.2.1}The Blockchain Basics}{2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.2.2}Private, Public and Consortium Blockchains}{4}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.3}Merkel Tree}{6}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.4}Consensus Models}{7}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.4.1}Proof of Work}{7}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.4.2}Proof of Stake}{7}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.4.3}Proof of Elapsed Time}{8}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.4.4}Byzantine Fault Tolerance}{8}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.4.5}Summery of Consensus Models}{8}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.5}Security and Weaknesses in Blockchain technology}{8}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.6}Blockchain Applications}{8}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.6.1}Bitcoin}{8}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.6.2}Ethereum}{9}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.6.3}Hyperledger}{9}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.7}Related work}{9}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.7.1}Brooklyn Microgrid}{10}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.8}Other Use Cases}{10}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {3}Specifications}{11}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {4}Implementation}{14}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {5}Testing}{15}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {6}Result}{16}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {7}Discussion}{17}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{Appendices}{18}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{Bibliography}{19}

@@ -1,0 +1,97 @@
+\documentclass[dvipsnames, b5paper, twoside, openright]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[Lenny]{fncychap}
+\usepackage[english]{babel}
+\usepackage{parskip}
+\usepackage{import}
+\usepackage{microtype}
+\usepackage{datetime}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{fancyhdr}
+\usepackage[toc,page]{appendix}
+\usepackage{pdfpages}
+\usepackage{titlesec}
+\usepackage{csquotes}
+\usepackage[hyphens]{url}
+\usepackage[style=numeric, backend=bibtex, sorting=none]{biblatex}
+%\emergencystretch=1em
+\bibliography{ref.bib}
+\makeatletter\@openrightfalse\makeatother
+%\titleformat{\chapter}{\normalfont\huge}{\thechapter.}{20pt}{\huge}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\newdateformat{monthyear}{\monthname[\THEMONTH], \THEYEAR}
+
+
+\begin{document}
+
+
+\import{front_page}{front_page.tex}
+
+%\includepdf[pages={1,2}]{oppgavetekst.pdf}
+%\addcontentsline{toc}{chapter}{Project Description}
+
+\pagenumbering{roman}
+\setcounter{page}{1}
+\setcounter{tocdepth}{3}
+
+\let\cleardoublepage\clearpage
+\import{./}{abstract.tex}
+\addcontentsline{toc}{chapter}{Abstract}
+
+
+\let\cleardoublepage\clearpage
+\import{./}{sammendrag.tex}
+\addcontentsline{toc}{chapter}{Sammendrag}
+
+%\let\cleardoublepage\clearpage
+%\import{./}{abriviations.tex}
+%\addcontentsline{toc}{chapter}{Abbreviations}
+
+\let\cleardoublepage\clearpage
+\tableofcontents
+\addcontentsline{toc}{chapter}{Table of Contents}
+
+%\let\cleardoublepage\clearpage
+%\listoffigures                                  
+%\addcontentsline{toc}{chapter}{List of Figures}
+\cleardoublepage
+
+
+%\listoftables                                   
+%\addcontentsline{toc}{chapter}{List of Tables}
+%\cleardoublepage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+\fancyhead[R]{\itshape \nouppercase \rightmark}
+\fancyhead[L]{\itshape \nouppercase Chapter \arabic{chapter}}
+\pagestyle{fancy}
+
+\let\cleardoublepage\clearpage
+\import{./}{introduction.tex}
+\let\cleardoublepage\clearpage
+\import{./}{background.tex}
+\let\cleardoublepage\clearpage
+\import{./}{spec.tex}
+\let\cleardoublepage\clearpage
+\import{./}{implementation.tex}
+\let\cleardoublepage\clearpage
+\import{./}{testing.tex}
+\let\cleardoublepage\clearpage
+\import{./}{result.tex}
+\let\cleardoublepage\clearpage
+\import{./}{discussion.tex}
+
+
+\let\cleardoublepage\clearpage
+\begin{appendices}
+%\import{./}{appendix.tex}
+\end{appendices}
+
+\let\cleardoublepage\clearpage
+\printbibliography
+\addcontentsline{toc}{chapter}{Bibliography}
+
+\end{document}

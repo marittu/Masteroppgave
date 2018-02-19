@@ -1,0 +1,165 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 2.9 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\datalist[entry]{none/global//global/global}
+  \entry{Nakamoto_bitcoin}{online}{}
+    \name{author}{1}{}{%
+      {{hash=NS}{%
+         family={Nakamoto},
+         familyi={N\bibinitperiod},
+         given={Satoshi},
+         giveni={S\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{NS1}
+    \strng{fullhash}{NS1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{title}{Bitcoin: A peer-to-peer electronic cash system}
+    \verb{url}
+    \verb http://bitcoin.org/bitcoin.pdf
+    \endverb
+    \field{year}{2009}
+  \endentry
+
+  \entry{Nofer}{article}{}
+    \name{author}{4}{}{%
+      {{hash=NM}{%
+         family={Nofer},
+         familyi={N\bibinitperiod},
+         given={Michael},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=GP}{%
+         family={Gomber},
+         familyi={G\bibinitperiod},
+         given={Peter},
+         giveni={P\bibinitperiod},
+      }}%
+      {{hash=HO}{%
+         family={Hinz},
+         familyi={H\bibinitperiod},
+         given={Oliver},
+         giveni={O\bibinitperiod},
+      }}%
+      {{hash=SD}{%
+         family={Schiereck},
+         familyi={S\bibinitperiod},
+         given={Dirk},
+         giveni={D\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{NM+1}
+    \strng{fullhash}{NMGPHOSD1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1007/s12599-017-0467-3
+    \endverb
+    \field{issn}{1867-0202}
+    \field{number}{3}
+    \field{pages}{183\bibrangedash 187}
+    \field{title}{Blockchain}
+    \field{volume}{59}
+    \field{journaltitle}{Business {\&} Information Systems Engineering}
+    \field{month}{06}
+    \field{year}{2017}
+  \endentry
+
+  \entry{Ethereum_pub_priv}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=BV}{%
+         family={Buterin},
+         familyi={B\bibinitperiod},
+         given={Vitalik},
+         giveni={V\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{BV1}
+    \strng{fullhash}{BV1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{title}{On Public and Private Blockchains}
+    \verb{url}
+    \verb https://blog.ethereum.org/2015/08/07/on-public-and-private-blockchain
+    \verb s/
+    \endverb
+    \field{type}{Blog}
+    \field{journaltitle}{Ethereum}
+    \field{month}{08}
+    \field{year}{2015}
+  \endentry
+
+  \entry{NRGcoin_Mihaylov}{inproceedings}{}
+    \name{author}{6}{}{%
+      {{hash=MM}{%
+         family={Mihaylov},
+         familyi={M\bibinitperiod},
+         given={M.},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=JS}{%
+         family={Jurado},
+         familyi={J\bibinitperiod},
+         given={S.},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=AN}{%
+         family={Avellana},
+         familyi={A\bibinitperiod},
+         given={N.},
+         giveni={N\bibinitperiod},
+      }}%
+      {{hash=MKV}{%
+         family={Moffaert},
+         familyi={M\bibinitperiod},
+         given={K.\bibnamedelima Van},
+         giveni={K\bibinitperiod\bibinitdelim V\bibinitperiod},
+      }}%
+      {{hash=dAIM}{%
+         prefix={de},
+         prefixi={d\bibinitperiod},
+         family={Abril},
+         familyi={A\bibinitperiod},
+         given={I.\bibnamedelima M.},
+         giveni={I\bibinitperiod\bibinitdelim M\bibinitperiod},
+      }}%
+      {{hash=NA}{%
+         family={Nowé},
+         familyi={N\bibinitperiod},
+         given={A.},
+         giveni={A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{MM+1}
+    \strng{fullhash}{MMJSANMKVAIMdNA1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{booktitle}{11th International Conference on the European Energy
+  Market (EEM14)}
+    \verb{doi}
+    \verb 10.1109/EEM.2014.6861213
+    \endverb
+    \field{issn}{2165-4077}
+    \field{pages}{1\bibrangedash 6}
+    \field{title}{NRGcoin: Virtual currency for trading of renewable energy in
+  smart grids}
+    \field{year}{2014}
+  \endentry
+\enddatalist
+\endinput
