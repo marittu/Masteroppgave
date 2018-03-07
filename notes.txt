@@ -1,0 +1,29 @@
+def run( self ):
+ while 1:
+ # Await an event on a readable socket descriptor
+ (sread, swrite, sexc) = select.select( self.descriptors, [], [] )
+ # Iterate through the tagged read descriptors
+ for sock in sread:
+ # Received a connect to the server (listening) socket
+ if sock == self.srvsock:
+ self.accept_new_connection()
+ else:
+ # Received something on a client socket
+ str = sock.recv(100)
+ # Check to see if the peer socket closed
+ if str == '':
+ host,port = sock.getpeername()
+ str = 'Client left %s:%s\r\n' % (host, port)
+ self.broadcast_string( str, sock )
+ sock.close
+ self.descriptors.remove(sock)
+ else:
+ host,port = sock.getpeername()
+ newstr = '[%s:%s] %s' % (host, port, str)
+ self.broadcast_string( newstr, sock )
+
+
+Til 4.4 
+sende meldinger mellom noder i blockchain
+Legge til nye blokker
+Lag forslag til struktur for transaksjoner

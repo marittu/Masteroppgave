@@ -1,1 +1,26 @@
 \chapter{Implementation}
+
+Class for blocks
+
+Class for blockchain
+
+Class for transactions
+
+hashlib.sha256 for hashes 
+
+%simple HTTP server so that any user can let our nodes know that a new transaction has occurred. A node will be able to accept a POST request with a transaction (like above) as the request body. This is why transactions are JSON formatted; we need them to be transmitted to our server in a request body.
+
+Socket vs HTTP
+
+TCP/UDP - UDP would be preferred in local LAN, could make WLAN for blockchain in finite area, but TCP for more general implementation 
+
+%TCP sockets in implementation
+
+Server class with one thread for each incoming connection
+Server acts as system master. Continuously broadcasts IP after becoming master. When others connect to the system and discover the master, they are initialized as clients. 
+
+If a master dies or disconnects, there is an election for a new master between the remaining nodes. 
+
+All nodes are aware of other peers in the system. All nodes broadcast presence? 
+
+If two masters (e.g. in two different subsystems), the master with the longest chain will be elected when the subsystems are reconnected

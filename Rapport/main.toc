@@ -18,33 +18,33 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {2.2.1}The Blockchain Basics}{2}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.2.2}Private, Public and Consortium Blockchains}{4}
+\contentsline {subsection}{\numberline {2.2.2}Private, Public and Consortium Blockchains}{5}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {2.3}Merkel Tree}{6}
+\contentsline {section}{\numberline {2.3}Merkel Tree}{7}
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {2.4}Consensus Models}{7}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.4.1}Proof of Work}{7}
+\contentsline {subsection}{\numberline {2.4.1}Proof of Work}{8}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.4.2}Proof of Stake}{7}
+\contentsline {subsection}{\numberline {2.4.2}Proof of Stake}{8}
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {2.4.3}Proof of Elapsed Time}{8}
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {2.4.4}Byzantine Fault Tolerance}{8}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.4.5}Summery of Consensus Models}{8}
+\contentsline {subsection}{\numberline {2.4.5}Summery of Consensus Models}{9}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {2.5}Security and Weaknesses in Blockchain technology}{8}
+\contentsline {section}{\numberline {2.5}Security and Weaknesses in Blockchain technology}{9}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {2.6}Blockchain Applications}{8}
+\contentsline {section}{\numberline {2.6}Blockchain Applications}{9}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.6.1}Bitcoin}{8}
+\contentsline {subsection}{\numberline {2.6.1}Bitcoin}{9}
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {2.6.2}Ethereum}{9}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.6.3}Hyperledger}{9}
+\contentsline {subsection}{\numberline {2.6.3}Hyperledger}{10}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {2.7}Related work}{9}
+\contentsline {section}{\numberline {2.7}Related work}{10}
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {2.7.1}Brooklyn Microgrid}{10}
 \defcounter {refsection}{0}\relax 

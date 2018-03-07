@@ -4,7 +4,7 @@ import time
 class Block():
     def __init__(self, *args):
         self.index = None
-        self.previous_hash = None#
+        self.previous_hash = None
         self.timestamp = None
         self.transactions = []
         self.new_hash = None
@@ -19,13 +19,14 @@ class Block():
     def print_block(self):
         print('Index: \t\t', self.index)
         print('Previous hash: \t', self.previous_hash)
-        print('Timestamp: \t', self.timestamp)
+        print('Timestamp: \t', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(self.timestamp))))
         print('Transactions: \t', self.transactions)
-        print('Hash: \t\t',self.new_hash)
+        print('Hash: \t\t', self.new_hash)
 
 class Blockchain():
     def __init__(self):
         self.chain = []
+        self.nodes = set()
 
     def add_block(self, block):
         if len(self.chain) > 0:#Not genesis block
@@ -41,6 +42,12 @@ class Blockchain():
             block.print_block()
             print()
 
+class Transactions():
+    def __init__(self):
+        self.sender = None
+        self.receiver = None
+        self.amount = None
+
 def create_genesis():
     genesis = Block()
     genesis.index = 0
@@ -48,21 +55,18 @@ def create_genesis():
     genesis.timestamp = str(time.time())
     genesis.new_hash = genesis.get_hash()
     return genesis
-    
 
 
-
-def main():
+if __name__ == "__main__":
     genesis = create_genesis()
     blockchain = Blockchain()
     blockchain.add_block(genesis)
-    
-    
+       
     first = Block()
     second = Block(1,2,3)
-    
+    #if consensus: blockchain.add_block(block)
     blockchain.add_block(first)
     blockchain.add_block(second)
     
     blockchain.print_chain()
-main()
+#Unittests to ensure correct behaviour 
