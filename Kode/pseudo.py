@@ -20,6 +20,11 @@
 - For header: index, previous hash, timestamp (increasing time or time in acceptable range for new blocks)
 - For block: Merkel tree
 
+#Messages
+- peer handles sending and receving of Messages
+- module for parsing and handling messages based on message type. Calling other modules based on message type
+- module for sending messges, including message type, recipient and message. Called from other modules
+
 #Block broadcasting 
 - Creater of block sends full block to all connected peers
 - Rely peers sends header to peers, if getdata received -> sends full block

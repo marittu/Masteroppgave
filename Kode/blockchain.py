@@ -52,7 +52,7 @@ def create_genesis():
     genesis = Block()
     genesis.index = 0
     genesis.previous_hash = 0
-    genesis.timestamp = str(time.time())
+    genesis.timestamp = 0
     genesis.new_hash = genesis.get_hash()
     return genesis
 

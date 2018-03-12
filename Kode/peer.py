@@ -1,113 +1,128 @@
 import optparse
 
-from twisted.internet.protocol import Protocol, ClientFactory
+from twisted.internet.protocol import Protocol, ClientFactory, ClientCreator
 from twisted.internet import reactor
-import time
 
-def parse_args():
-	usage = """usage: %prog [options] [client|server] [hostname]:port
-
-	python peer.py server 127.0.0.1:8000
-	python peer.py client 127.0.0.1:8000
-	
-	"""
-
-	parser = optparse.OptionParser(usage)
-
-	_, args = parser.parse_args()
-
-	if len(args) != 2:
-		print (parser.format_help())
-		parser.exit()
-
-	peertype, addresses = args
-
-	def parse_address(addr):
-		if ':' not in addr:
-			host = '127.0.0.1'
-			port = addr
-		else:
-			host, port = addr.split(':', 1)
-
-		if not port.isdigit():
-			parser.error('Ports must be integers.')
-
-		return host, int(port)
-
-	return peertype, parse_address(addresses)
+import time, json
 
 
 class Peer(Protocol):
 
-	acks = 0
 	connected = False
 
 	def __init__(self, factory, peer_type):
+		
 		self.pt = peer_type
 		self.factory = factory
+		self.remote_nodeid = None
+		self.nodeid = self.factory.nodeid
 
 	def connectionMade(self):
+		port = self.transport.getPeer().port
 		if self.pt == 'client':
 			self.connected = True
-			reactor.callLater(5, self.sendUpdate)
-		else:
-			print ("Connected from", self.transport.client)
-			try:
-				self.transport.write(bytes('<connection up>', 'utf-8'))
-			except Exception as e:
-				print (e)
-			self.ts = time.time()
+			self.send_hello()
 
-	def sendUpdate(self):
-		print ("Sending update")
-		try:
-			self.transport.write(bytes('<update>', 'utf-8'))
-		except Exception as inst:
-			print ("Exception trying to send: ", inst)    
-		if self.connected == True:
-			reactor.callLater(5, self.sendUpdate)
-
-	def sendAck(self):
-		print ("sendAck")
-		self.ts = time.time()
-		try:
-			self.transport.write(bytes('<Ack>', 'utf-8'))
-		except Exception as e:
-			print (e)
-
-	def dataReceived(self, data):
-		if self.pt == 'client':
-			print ('Client received ' + str(data, 'utf-8'))
-			self.acks += 1
-		else:
-			print ('Server received ' + str(data, 'utf-8'))
-			self.sendAck()
-
+		
 	def connectionLost(self, reason):
-		print ("Disconnected")
+		
 		if self.pt == 'client':
 			self.connected = False
-			self.done()
+		else:
+			self.factory.remove_peer(self.remote_nodeid)
+			self.factory.print_peers()
 
-	def done(self):
-		self.factory.finished(self.acks)
+	def dataReceived(self, data):
+		msg = json.loads(data)
+		print(self.pt, "Received: ", msg)
+		if msg['msgtype'] == 'hello':
 
+			if self.pt == 'server':
+				self.handle_hello(msg)
+
+			else:
+				self.factory.add_peers(msg['nodeid'], msg['hostport'])
+				
+				
+		elif msg['msgtype'] == 'peer':
+			self.handle_peers(msg)
+
+		elif msg['msgtype'] == 'broadcast':
+			self.broadcast(msg) 
+
+	#Move rest of protocol to messages module
+
+	def send_hello(self):
+
+		msg = {'msgtype': 'hello', 'nodeid': self.factory.nodeid, 'hostport': self.factory.hostport} #Add IP?
+		self.send_msg(msg)
+
+
+	def handle_hello(self, msg):
+		self.remote_nodeid = msg['nodeid']
+		if self.pt == 'server' and self.remote_nodeid == self.factory.nodeid:
+			self.factory.client = self.transport.getPeer().port
+			print(self.factory.client)
+		else:
+			self.factory.add_peers(msg['nodeid'], msg['hostport'])
+		
+			self.send_hello()
+		
+			reactor.callLater(1, self.send_peers)		
+	
+	def send_peers(self):
+		send_msg = {'msgtype':'peer', 'peers': self.factory.peers}
+		self.send_msg(send_msg)
+
+	def handle_peers(self, msg):
+		for peer in msg['peers']:
+			host = msg['peers'][peer]
+			if peer not in self.factory.peers:
+				c = ClientCreator(reactor, Peer, self.factory, self.pt)
+				c.connectTCP('localhost', host)
+				self.factory.add_peers(peer, host)
+	
+	def broadcast(self, msg):
+		for peer in self.peers:
+			self.send_msg(msg)
+
+	def test(self):
+		msg = input("")
+		if not msg:
+			pass
+		else:
+			send_msg(msg)
+
+
+	def send_msg(self, msg):
+		print(self.pt, "Sending: ", msg)
+		self.transport.write(json.dumps(msg).encode('utf-8'))
 
 class PeerFactory(ClientFactory):
 
-	def __init__(self, peertype, fname):
-		print ('@__init__')
+	def __init__(self, peertype, hostport, nodeid):
+		#include ip in addition to port
 		self.pt = peertype
-		self.acks = 0
-		self.fname = fname
-		self.records = []
+		self.hostport = hostport
+		self.nodeid = str(nodeid)
+		self.client = None
+		self.peers = {}
 
-	def finished(self, arg):
-		self.acks = arg
-		self.report()
+	def print_peers(self):
+		for peer in self.peers:
+			print(peer)
 
-	def report(self):
-		print ('Received %d acks' % self.acks)
+	def add_peers(self, peer, hostport):
+		self.peers[peer] = hostport
+
+		print (self.pt)
+		for peer in self.peers:
+			print(self.peers.get(peer))
+
+	def remove_peer(self, peer):
+		print (peer, "disconnected")
+		del self.peers[peer]
+
 
 	def clientConnectionFailed(self, connector, reason):
 		print ('Failed to connect to:', connector.getDestination())
@@ -116,20 +131,24 @@ class PeerFactory(ClientFactory):
 	def clientConnectionLost(self, connector, reason):
 		print ('Lost connection.  Reason:', reason)
 
-	def startFactory(self):
-		print ("@startFactory")
-		if self.pt == 'server':
-			self.fp = open(self.fname, 'w+')
-
-	def stopFactory(self):
-		print ("@stopFactory")
-		if self.pt == 'server':
-			self.fp.close()
 
 	def buildProtocol(self, addr):
-		print ("@buildProtocol")
 		protocol = Peer(self, self.pt)
 		return protocol
+
+
+def run_server(port, nodeid):
+	factory = PeerFactory('server', port, nodeid)
+	reactor.listenTCP(port, factory)
+	print ("Starting server " + 'localhost' + " port " + str(port))
+	
+def run_client(port, hostport, nodeid):
+	factory = PeerFactory('client', hostport, nodeid)
+	host = '127.0.0.1'	
+	reactor.connectTCP(host, port, factory)
+	print ("Connecting to host " + host + " port " + str(port))
+
+		
 
 
 if __name__ == '__main__':
@@ -137,11 +156,12 @@ if __name__ == '__main__':
 
 
 	if peer_type == 'server':
-		factory = PeerFactory('server', 'log')
+		factory = PeerFactory('server')
 		reactor.listenTCP(address[1], factory)
-		print ("Starting server @" + address[0] + " port " + str(address[1]))
+		print ("Starting server " + address[0] + " port " + str(address[1]))
 	else:
-		factory = PeerFactory('client', '')
+
+		factory = PeerFactory('client')
 		host, port = address
 		print ("Connecting to host " + host + " port " + str(port))
 		reactor.connectTCP(host, port, factory)
