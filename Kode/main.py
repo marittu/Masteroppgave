@@ -1,11 +1,12 @@
-import peer
+from node import Node
 import sys, optparse, uuid
 from twisted.internet import reactor
+from twisted.python import log
 
 def parse_args():
     usage = """usage: %prog [host]:port [connect]:port
 
-    python peer.py 8000
+    python peer.py 8000 8000
     python peer.py 8001 8000
 
     """
@@ -14,7 +15,7 @@ def parse_args():
 
     _, args = parser.parse_args()
 
-    if len(args) == 1 or len(args) == 2:
+    if len(args) == 2:
         pass
     else:
         print(len(args))
@@ -22,29 +23,23 @@ def parse_args():
         parser.exit()
 
     if len(args) == 2:
-        peertype = 'client'
         host, connect = args
-        connect = int(connect)
-    else: 
-        peertype = 'initial'
-        host = args[0]
-        connect = None
+    
+    return int(host), int(connect)
 
-    return peertype, int(host), connect
-
+#Always take two arguemts, initial just connects to self
+#Start server and client in same method and use tcpendpoints?
 
 def main():
-    peer_type, host, connect = parse_args()
+    #log.startLogging(sys.stdout)
+    host, connect = parse_args()
 
-    nodeid = uuid.uuid4()
+    nodeid = str(uuid.uuid4())
+    print(nodeid)
+    #peer.run_server(host, nodeid)
+    node = Node(host, nodeid)
+    node.run_node(host, connect, nodeid)
 
-    peer.run_server(host, nodeid)
-    
-    if peer_type == 'client':
-        peer.run_client(connect, host, nodeid)
-
-    #else:
-    #    peer.run_client(host, host, nodeid)
         
     reactor.run()
 if __name__ == '__main__':

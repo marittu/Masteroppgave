@@ -1,74 +1,85 @@
-import optparse
+from twisted.internet.protocol import Factory, connectionDone
+from twisted.protocols.basic import IntNStringReceiver
+from twisted.internet.endpoints import TCP4ServerEndpoint, TCP4ClientEndpoint, connectProtocol #Protocol, ClientFactory, ClientCreator
+from twisted.internet import reactor, task
+from twisted.internet.task import LoopingCall
+from twisted.python import log
 
-from twisted.internet.protocol import Protocol, ClientFactory, ClientCreator
-from twisted.internet import reactor
-
-import time, json
+import time, json, struct
 
 
-class Peer(Protocol):
+class Peer(IntNStringReceiver):
+	"""
+	Subclass of the protocol IntNStringReceiver.
+	Each received messages is a callback to the method 'stringReceived'
+	Keeps track of information in a connection between two peers
+	"""
 
-	connected = False
+	#Message format uses little endian, unsigned int
+	structFormat = '<I'
+	prefixLength = struct.calcsize(structFormat)
 
-	def __init__(self, factory, peer_type):
-		
-		self.pt = peer_type
+	def __init__(self, factory):
 		self.factory = factory
-		self.remote_nodeid = None
 		self.nodeid = self.factory.nodeid
+		self.remote_nodeid = None
+		self.ping = LoopingCall(self.send_ping)
 
 	def connectionMade(self):
-		port = self.transport.getPeer().port
-		if self.pt == 'client':
-			self.connected = True
-			self.send_hello()
-
+		pass
 		
 	def connectionLost(self, reason):
 		
-		if self.pt == 'client':
-			self.connected = False
-		else:
-			self.factory.remove_peer(self.remote_nodeid)
-			self.factory.print_peers()
+		self.factory.remove_peer(self.remote_nodeid)
+		self.factory.print_peers()
+		#Reconnect_loop?
 
-	def dataReceived(self, data):
+		if self.ping.running:
+			self.ping.stop()
+
+	def stringReceived(self, data):
+		print(data)
 		msg = json.loads(data)
-		print(self.pt, "Received: ", msg)
+		
 		if msg['msgtype'] == 'hello':
+			self.remote_nodeid = msg['nodeid']
+			self.factory.add_peers(msg['nodeid'], msg['hostport'])
 
-			if self.pt == 'server':
-				self.handle_hello(msg)
+			if not self.ping.running:
+				self.ping.start(30) #Ping every 30 minutes (seconds for testing) 
+				#TODO make variable global
 
-			else:
-				self.factory.add_peers(msg['nodeid'], msg['hostport'])
-				
-				
+			self.hello_ack()
+		#Move duplicate code to handle_hello	
+		elif msg['msgtype'] == 'ack':
+			self.remote_nodeid = msg['nodeid']
+			self.factory.add_peers(msg['nodeid'], msg['hostport'])
+
+			if not self.ping.running:
+				self.ping.start(30) #Ping every 30 minutes (seconds for testing) 
+				#TODO make variable global
+		
 		elif msg['msgtype'] == 'peer':
 			self.handle_peers(msg)
 
-		elif msg['msgtype'] == 'broadcast':
-			self.broadcast(msg) 
+		elif msg['msgtype'] == 'ping':
+			self.send_pong()
+
 
 	#Move rest of protocol to messages module
 
 	def send_hello(self):
-
+		
 		msg = {'msgtype': 'hello', 'nodeid': self.factory.nodeid, 'hostport': self.factory.hostport} #Add IP?
 		self.send_msg(msg)
 
+	def hello_ack(self):
+		msg = {'msgtype': 'ack', 'nodeid': self.factory.nodeid, 'hostport': self.factory.hostport} #Add IP?
+		self.send_msg(msg)
 
-	def handle_hello(self, msg):
-		self.remote_nodeid = msg['nodeid']
-		if self.pt == 'server' and self.remote_nodeid == self.factory.nodeid:
-			self.factory.client = self.transport.getPeer().port
-			print(self.factory.client)
-		else:
-			self.factory.add_peers(msg['nodeid'], msg['hostport'])
-		
-			self.send_hello()
-		
-			reactor.callLater(1, self.send_peers)		
+		#Tell the new node about own peers
+		reactor.callLater(0.1, self.send_peers)		
+	
 	
 	def send_peers(self):
 		send_msg = {'msgtype':'peer', 'peers': self.factory.peers}
@@ -77,47 +88,58 @@ class Peer(Protocol):
 	def handle_peers(self, msg):
 		for peer in msg['peers']:
 			host = msg['peers'][peer]
+			print(peer)
 			if peer not in self.factory.peers:
-				c = ClientCreator(reactor, Peer, self.factory, self.pt)
-				c.connectTCP('localhost', host)
-				self.factory.add_peers(peer, host)
-	
-	def broadcast(self, msg):
-		for peer in self.peers:
-			self.send_msg(msg)
+				self.factory.connect_to_peer(self.factory.nodeid, host, peer)
 
-	def test(self):
-		msg = input("")
-		if not msg:
-			pass
-		else:
-			send_msg(msg)
+	def send_ping(self):
+		msg = {'msgtype':'ping', 'time':time.time(), 'nodeid':self.factory.nodeid}
+		self.send_msg(msg)
+
+	def send_pong(self):
+		msg = {'msgtype':'pong', 'time':time.time(), 'nodeid':self.factory.nodeid}
+		self.send_msg(msg)
 
 
 	def send_msg(self, msg):
-		print(self.pt, "Sending: ", msg)
-		self.transport.write(json.dumps(msg).encode('utf-8'))
+		#print(self.pt, "Sending: ", msg)
+		self.sendString(json.dumps(msg).encode('utf-8'))
 
-class PeerFactory(ClientFactory):
+#TODO: Update peerlist of already connected peers when node receives new connection
+#TODO: Set limit to number of connected peers. Ask for more peers if connection lost 
 
-	def __init__(self, peertype, hostport, nodeid):
+class PeerManager(Factory):
+
+	def __init__(self, hostport, nodeid): #peertype
 		#include ip in addition to port
-		self.pt = peertype
 		self.hostport = hostport
-		self.nodeid = str(nodeid)
+		self.nodeid = nodeid
 		self.client = None
 		self.peers = {}
+		#self.message_callback = self.parse_msg
+		selfreactor = reactor
+		#incomming/outgoing hosts set()
+		
+
+	def buildProtocol(self, addr):
+		return Peer(self)
+		
+	def got_protocol(self, p):
+		"""
+		Callback to start the protocol exchange by sending a hello message.
+		"""
+		p.send_hello()
 
 	def print_peers(self):
 		for peer in self.peers:
 			print(peer)
 
 	def add_peers(self, peer, hostport):
-		self.peers[peer] = hostport
-
-		print (self.pt)
+		if peer not in self.peers:
+			print("Added peer:", peer, hostport)
+			self.peers[peer] = hostport
 		for peer in self.peers:
-			print(self.peers.get(peer))
+			print("Peer", self.peers.get(peer))
 
 	def remove_peer(self, peer):
 		print (peer, "disconnected")
@@ -132,38 +154,34 @@ class PeerFactory(ClientFactory):
 		print ('Lost connection.  Reason:', reason)
 
 
-	def buildProtocol(self, addr):
-		protocol = Peer(self, self.pt)
-		return protocol
+	def connect_to_peer(self, hostport, connect_port, nodeid):
+		"""
+		Let client to connect to other nodes pased on port
+		"""	
+		print(hostport)
+		print(connect_port)
+		if nodeid not in self.peers:
+			print("Connect nodeid", nodeid)
+			endpoint = TCP4ClientEndpoint(reactor, '127.0.0.1', connect_port)
+			d = connectProtocol(endpoint, Peer(self))
+			d.addCallback(self.got_protocol)
+			d.addErrback(log.err)
 
-
-def run_server(port, nodeid):
-	factory = PeerFactory('server', port, nodeid)
-	reactor.listenTCP(port, factory)
-	print ("Starting server " + 'localhost' + " port " + str(port))
-	
-def run_client(port, hostport, nodeid):
-	factory = PeerFactory('client', hostport, nodeid)
-	host = '127.0.0.1'	
-	reactor.connectTCP(host, port, factory)
-	print ("Connecting to host " + host + " port " + str(port))
-
+	def run_node(self, hostport, connect_port, nodeid):
+		"""
+		Start server on host given by user
+		Start client and connect to host given by user
+		"""
+		endpoint = TCP4ServerEndpoint(reactor, hostport)
+		d = endpoint.listen(self)
+		d.addErrback(log.err)
 		
+		self.connect_to_peer(hostport, connect_port, nodeid)
+		
+		reactor.run()
+
 
 
 if __name__ == '__main__':
-	peer_type, address = parse_args()
-
-
-	if peer_type == 'server':
-		factory = PeerFactory('server')
-		reactor.listenTCP(address[1], factory)
-		print ("Starting server " + address[0] + " port " + str(address[1]))
-	else:
-
-		factory = PeerFactory('client')
-		host, port = address
-		print ("Connecting to host " + host + " port " + str(port))
-		reactor.connectTCP(host, port, factory)
 
 	reactor.run()
