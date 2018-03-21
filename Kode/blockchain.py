@@ -12,6 +12,7 @@ class Block():
             for arg in args:
                 self.transactions.append(arg)
 
+
     def get_hash(self):
         new_hash = str(self.index)+str(self.previous_hash)+str(self.timestamp)+str(self.transactions)
         return str(hashlib.sha256(new_hash.encode('utf-8')).hexdigest())        
@@ -19,25 +20,43 @@ class Block():
     def print_block(self):
         print('Index: \t\t', self.index)
         print('Previous hash: \t', self.previous_hash)
-        print('Timestamp: \t', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(self.timestamp))))
+        #print('Timestamp: \t', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(self.timestamp))))
+        print('Timestamp: \t', self.timestamp)
         print('Transactions: \t', self.transactions)
         print('Hash: \t\t', self.new_hash)
+
 
 class Blockchain():
     def __init__(self):
         self.chain = []
-        self.nodes = set()
+        
+        self.add_block(create_genesis())
 
-    def add_block(self, block):
+    #Move to block class?
+    def propose_block(self, block):
         if len(self.chain) > 0:#Not genesis block
             block.index = self.chain[-1].index + 1
             block.previous_hash = self.chain[-1].new_hash
-            block.timestamp = time.time()
+            block.timestamp = time.time() 
             block.new_hash = block.get_hash()
+        return block
+
+        #remove after testing
+    def print_block(self): 
+        print('Index: \t\t', self.index)
+        print('Previous hash: \t', self.previous_hash)
+        #print('Timestamp: \t', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(self.timestamp))))
+        print('Timestamp: \t', self.timestamp)
+        print('Transactions: \t', self.transactions)
+        print('Hash: \t\t', self.new_hash)
+
+    def add_block(self, block):
+        
         self.chain.append(block)
         #TODO - validate block before adding
 
     def print_chain(self):
+        print("chain:")
         for block in self.chain:
             block.print_block()
             print()
@@ -58,9 +77,9 @@ def create_genesis():
 
 
 if __name__ == "__main__":
-    genesis = create_genesis()
+    #genesis = create_genesis()
     blockchain = Blockchain()
-    blockchain.add_block(genesis)
+    #blockchain.add_block(genesis)
        
     first = Block()
     second = Block(1,2,3)
