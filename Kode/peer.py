@@ -5,8 +5,11 @@ from twisted.internet import reactor, task
 from twisted.internet.task import LoopingCall
 from twisted.python import log
 
-import time, json, struct
+import time, json, struct, pickle
 
+PING_INTERVAL = 10
+TIMEOUT = 3 * PING_INTERVAL
+MAX_PEERS = 5
 
 class Peer(IntNStringReceiver):
 	"""
@@ -31,6 +34,10 @@ class Peer(IntNStringReceiver):
 	def connectionLost(self, reason):
 		
 		self.factory.remove_peer(self.remote_nodeid)
+		try:
+			self.factory.connections.pop(self.remote_nodeid)
+		except:
+			pass
 		self.factory.print_peers()
 		#Reconnect_loop?
 
@@ -38,48 +45,69 @@ class Peer(IntNStringReceiver):
 			self.ping.stop()
 
 	def stringReceived(self, data):
-		print(data)
-		msg = json.loads(data)
-		
-		if msg['msgtype'] == 'hello':
+		try: 
+			msg = json.loads(data)
+		except:
+			msg = pickle.loads(data)
+		msg_type = msg['msgtype']
+		#if msg_type != 'ping' and msg_type != 'pong':
+		#	print(msg)
+		#else:
+		#	pass
+			#print(msg)
+
+		if msg_type == 'hello':
 			self.remote_nodeid = msg['nodeid']
-			self.factory.add_peers(msg['nodeid'], msg['hostport'])
+			self.factory.add_peers(self.remote_nodeid, msg['hostport'])
+			if self.remote_nodeid not in self.factory.connections:
+				self.factory.connections.update({self.remote_nodeid: self})
 
 			if not self.ping.running:
-				self.ping.start(30) #Ping every 30 minutes (seconds for testing) 
-				#TODO make variable global
+				self.ping.start(PING_INTERVAL) #Ping every 30 minutes (seconds for testing) 
 
+			#Send acknowlege and own peerlist
 			self.hello_ack()
-		#Move duplicate code to handle_hello	
-		elif msg['msgtype'] == 'ack':
+			self.send_peers()
+		#TODO: Move duplicate code to handle_hello	
+		elif msg_type == 'ack':
 			self.remote_nodeid = msg['nodeid']
-			self.factory.add_peers(msg['nodeid'], msg['hostport'])
+			self.factory.add_peers(self.remote_nodeid, msg['hostport'])
+			if self.remote_nodeid not in self.factory.connections:
+				self.factory.connections.update({self.remote_nodeid: self})
 
 			if not self.ping.running:
-				self.ping.start(30) #Ping every 30 minutes (seconds for testing) 
-				#TODO make variable global
+				self.ping.start(PING_INTERVAL) #Ping every 30 minutes (seconds for testing) 
 		
-		elif msg['msgtype'] == 'peer':
+		elif msg_type == 'peer':
 			self.handle_peers(msg)
 
-		elif msg['msgtype'] == 'ping':
-			self.send_pong()
+		elif msg_type == 'req_peers':
+			self.send_peers()
+
+		elif msg_type == 'ping':
+			if msg['nodeid'] != self.factory.nodeid:
+				self.send_pong()
+				
+
+		elif msg_type == 'pong':
+			#print("Pong from ", msg['nodeid'])
+			self.factory.receive_pong_message(msg)
+		
+		else:
+			#Handle other messages in Node/Peer_Factory
+			print(msg)
+			self.factory.message_callback(msg_type, msg)
 
 
 	#Move rest of protocol to messages module
 
 	def send_hello(self):
-		
 		msg = {'msgtype': 'hello', 'nodeid': self.factory.nodeid, 'hostport': self.factory.hostport} #Add IP?
 		self.send_msg(msg)
 
 	def hello_ack(self):
 		msg = {'msgtype': 'ack', 'nodeid': self.factory.nodeid, 'hostport': self.factory.hostport} #Add IP?
-		self.send_msg(msg)
-
-		#Tell the new node about own peers
-		reactor.callLater(0.1, self.send_peers)		
-	
+		self.send_msg(msg)	
 	
 	def send_peers(self):
 		send_msg = {'msgtype':'peer', 'peers': self.factory.peers}
@@ -88,17 +116,21 @@ class Peer(IntNStringReceiver):
 	def handle_peers(self, msg):
 		for peer in msg['peers']:
 			host = msg['peers'][peer]
-			print(peer)
-			if peer not in self.factory.peers:
+			#Add peer if not self or already added max peers
+			if peer not in self.factory.peers and len(self.factory.peers) < MAX_PEERS:
 				self.factory.connect_to_peer(self.factory.nodeid, host, peer)
 
 	def send_ping(self):
+		"""
+		Pings from both server and client side TODO fix better ping/pong
+		"""
 		msg = {'msgtype':'ping', 'time':time.time(), 'nodeid':self.factory.nodeid}
 		self.send_msg(msg)
 
 	def send_pong(self):
 		msg = {'msgtype':'pong', 'time':time.time(), 'nodeid':self.factory.nodeid}
 		self.send_msg(msg)
+		#time.sleep(15)
 
 
 	def send_msg(self, msg):
@@ -114,14 +146,17 @@ class PeerManager(Factory):
 		#include ip in addition to port
 		self.hostport = hostport
 		self.nodeid = nodeid
-		self.client = None
-		self.peers = {}
-		#self.message_callback = self.parse_msg
-		selfreactor = reactor
+		self.peers = {} 
+		self.connections = {} #Make set only containing conn
+		self.message_callback = self.parse_msg
+		self.reactor = reactor
 		#incomming/outgoing hosts set()
-		
+		#reactor.callLater(1, self.broacast_block)
 
 	def buildProtocol(self, addr):
+		"""
+		Builds the protocol that holds the connection between two peers
+		"""
 		return Peer(self)
 		
 	def got_protocol(self, p):
@@ -135,37 +170,62 @@ class PeerManager(Factory):
 			print(peer)
 
 	def add_peers(self, peer, hostport):
-		if peer not in self.peers:
+		"""
+		Add new peers if not already added, not self and not connected to max number of peers
+		"""
+		if peer not in self.peers and hostport != self.hostport and len(self.peers) < MAX_PEERS:
 			print("Added peer:", peer, hostport)
 			self.peers[peer] = hostport
 		for peer in self.peers:
 			print("Peer", self.peers.get(peer))
 
 	def remove_peer(self, peer):
+		"""
+		Delete peer from peer list if connection is lost
+		"""
 		print (peer, "disconnected")
-		del self.peers[peer]
+		if peer != self.nodeid: #Causes error in disconnection
+			try:
+				del self.peers[peer]
+			except:
+				pass
 
 
 	def clientConnectionFailed(self, connector, reason):
 		print ('Failed to connect to:', connector.getDestination())
 		self.finished(0)
 
-	def clientConnectionLost(self, connector, reason):
-		print ('Lost connection.  Reason:', reason)
+	#def clientConnectionLost(self, connector, reason):
+	#	print ('Lost connection.  Reason:', reason)
 
 
 	def connect_to_peer(self, hostport, connect_port, nodeid):
 		"""
 		Let client to connect to other nodes pased on port
 		"""	
-		print(hostport)
-		print(connect_port)
-		if nodeid not in self.peers:
-			print("Connect nodeid", nodeid)
-			endpoint = TCP4ClientEndpoint(reactor, '127.0.0.1', connect_port)
-			d = connectProtocol(endpoint, Peer(self))
-			d.addCallback(self.got_protocol)
-			d.addErrback(log.err)
+		print("Connect nodeid", nodeid)
+		endpoint = TCP4ClientEndpoint(reactor, '127.0.0.1', connect_port)
+		d = connectProtocol(endpoint, Peer(self))
+		d.addCallback(self.got_protocol)
+		d.addErrback(log.err)
+		#TODO?
+		#Add connection to peer in peer dict, connection lets you send msg to specific peer
+	
+	def broadcast(self, msg):
+		for _, conn in self.connections.items():
+			conn.sendString(pickle.dumps(msg))
+			
+
+	def receive_pong_message(self, message):
+		raise NotImplementedError("To be implemented in subclass")
+
+	def receive_block(self, message):
+		raise NotImplementedError("To be implemented in subclass")
+
+
+	def parse_msg(self, msg_type, msg):
+		if msg_type == "block":
+			self.receive_block(msg)
 
 	def run_node(self, hostport, connect_port, nodeid):
 		"""

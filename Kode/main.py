@@ -40,7 +40,10 @@ def main():
     node = Node(host, nodeid)
     node.run_node(host, connect, nodeid)
 
+    node.broadcast_block()
         
     reactor.run()
+
+
 if __name__ == '__main__':
     main()
