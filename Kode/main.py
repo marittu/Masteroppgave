@@ -39,9 +39,7 @@ def main():
     #peer.run_server(host, nodeid)
     node = Node(host, nodeid)
     node.run_node(host, connect, nodeid)
-
-    node.broadcast_block()
-        
+    
     reactor.run()
 
 

@@ -1,17 +1,57 @@
 \chapter{Implementation}
+It is assumed that there is central token handler, that issues tokens when a deposit is made into a wallet of a node. Producers can also exchange there tokens for currency at the token handler.
 
+It is also assumed that some form of hardware that can measure electricity consumption and report back to the blockchain node. Transmission lines and other aspects related to the transfer of electricity is not part of the scope for this thesis.
+
+\section{The Blockchain}
 Class for blocks
 
 Class for blockchain
 
-Class for transactions
-
+Genesis
+Validation
 hashlib.sha256 for hashes 
+
+\section{Network Communication}
+Peer to Peer network implemented with Python framework Twisted. Asynchronous. Event based. The initial node starts a server and connects to itself. Other nodes connect to a server already running on a given port. Hello message is sent from node trying to connect and receives and hello ack if connection is successful. Connecting node receives a list of peers from the node it connected to and tries to connect to them in the same manner.
 
 
 Socket vs HTTP
 
-TCP/UDP - UDP would be preferred in local LAN, could make WLAN for blockchain in finite area, but TCP for more general implementation 
+TCP/UDP - UDP would be preferred in local LAN, could make WLAN for blockchain in 
+finite area, but TCP for more general implementation 
 
-\section{Network Communication}
-Peer to Peer network implemented with Python framework Twisted. Asynchronous. Event based. The initial node starts a server, all other nodes starts a server and a client connecting to the initial or another server. Connection starts with a hello-message, and receives information about other peers connected to the network. Each node stores two peer lists, one in the client object and one in the server object (move peers outside of module to create combined peer list for server and client)
+
+
+Reactor
+Deferreds, callback and errback chain
+
+
+Lock for transactions?
+
+No protection against brute force attacks on network
+
+Store all peers since finite size of network?
+\section{Algorithm} %Bedre navn ASAP
+Send hello
+Ack hello
+Start ping
+Respond with pong
+If 3 pings unresponded - remove peer
+Also drop peer in peer list if connection is dropped and notified
+
+Connecting node receives other peers in network, connects to peers and repeat above process until no unconnected peers or max peers connected
+Starts a new client for every peer it connects to
+Peers receive connections on server if they are being connected to
+
+Initial node starts blockchain
+Connecting nodes compare local head block to peer
+If not the same, receive blockchain if other peer has connecting peers head block in chain
+Validate blockchain and query other peers for head block and receive blockchain if its not the same
+When blockchains are the same start creating blocks
+When new block created, it is proposed to the other peers, they validate block and accept it and sets it to be local head block 
+
+
+\section{Consensus}
+
+\section{Smart Contracts}
