@@ -26,20 +26,22 @@ class Block():
         
 
 
-    def validate_block(self, head_block):
+    def validate_block(self, neighbour_block):
         """
         Validate block based on the latest commited block in the chain
         TODO: validate transactions in block
         """
 
-        if self.index != head_block.index + 1:
+        if self.index != neighbour_block.index + 1:
             return False
-        if self.previous_hash != head_block.new_hash:
+        if self.previous_hash != neighbour_block.new_hash:
             return False
         if self.new_hash != self.get_hash():
             return False
-        if (self.timestamp - time.time()) < 60 and (self.timestamp - time.time()) > 60: #Time +/- 1 min
-            return False
+        #Make sure time between two blocks is not more than 60 seconds unless genesis
+        if neighbour_block.index != 0:
+            if (self.timestamp - neighbour_block.timestamp) > 60:
+                return False
         return True
 
     def propose_block(self, head_block):
@@ -107,8 +109,7 @@ class Blockchain():
         for block in self.blockchain[len(self.blockchain)-1::-1]: #itterate in reverse
             if not block.validate_block(prev_block):
                 return False
-            
-            prev_block = self.blockchain[block.index -2]
+            prev_block = self.blockchain[prev_block.index -1]
             if prev_block == self.genesis:
                 return True
         
@@ -149,3 +150,18 @@ if __name__ == "__main__":
     
     blockchain.print_chain()
 #Unittests to ensure correct behaviour 
+
+"""
+class InvalidBlock(Exception):
+    def __init__(self,*args,**kwargs):
+        Exception.__init__(self,*args,**kwargs)
+
+class InvalidBlockchain(Exception):
+    def __init__(self,*args,**kwargs):
+        Exception.__init__(self,*args,**kwargs)
+
+try:
+    block.validate()
+except InvalidBlock as ex:
+    raise InvalidBlockchain("Invalid blockchain at block {} caused by: {}".format(i, str(ex)))
+"""

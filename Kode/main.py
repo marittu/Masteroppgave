@@ -1,7 +1,9 @@
 from node import Node
+from storage import Log
 import sys, optparse, uuid
 from twisted.internet import reactor
 from twisted.python import log
+
 
 def parse_args():
     usage = """usage: %prog [host]:port [connect]:port
@@ -34,12 +36,27 @@ def main():
     #log.startLogging(sys.stdout)
     host, connect = parse_args()
 
-    nodeid = str(uuid.uuid4())
-    print(nodeid)
-    #peer.run_server(host, nodeid)
-    node = Node(host, nodeid)
-    node.run_node(host, connect, nodeid)
+    """
+    Assume node uses same hostport if it restarts after a crash
+    If node as participated in blockchain network before,
+    it will be able to continue from where it left off, 
+    otherwise it creates a new log with a new nodeid
+    """
+    try:
+        with open('Log/'+str(host)+'.txt', 'r') as f:
+            nodeid = f.readline()
+        f.close()
+        log = Log(str(host))
+    except:
+        nodeid = str(uuid.uuid4())
+        print(nodeid)
+        log = Log(str(host)) #update on stable storage
+        log.write(nodeid)
     
+
+    node = Node(host, nodeid, log)
+    node.run_node(host, connect, nodeid)
+
     reactor.run()
 
 

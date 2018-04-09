@@ -135,10 +135,10 @@ A Merkle consistency proof lets you verify that any two versions of a log are co
 A Merkle audit proof lets you verify that a specific certificate has been included in a log. This is a critical verification task because the Certificate Transparency model demands that all TLS clients reject any certificates that do not show up in a certificate log.
 
 \section{Consensus Models}
+Byzantine Fault Tolerance
 Consensus models are important in distributed systems, in order for ... correct version of the shared ledger. 
 %\cite{Zheng_overview}
 %Table to summerize this section
-Reward for mining
 Safety, liveliness, fault-tolerance
 Two types of fault-tolerance - fail-stop and Byzantine faults 
 
@@ -183,14 +183,47 @@ no coin creation (mining) exists in proof of stake. Instead, all the coins exist
 \subsection{Proof of Elapsed Time}
 
 
-\subsection{Byzantine Fault Tolerance}
-Byzantine Fault Tolerance is a form of "leader-follower" protocol. Private blockchains do not utilize proof of work as a consensus model. Rather, a Byzantine Fault Tolerance protocol can be used to ensure valid transactions. Requires more than one node in network 
+\subsection{Raft}
+Raft is a partially asynchronous, leader based consensus algorithm for managing replicated logs across the system. 
 
-Ripple and Stellar use open-ended (in regards to node participation) Byzantine fault tolerance as a consensus model
+There are three main parts of the Raft algorithm: leader election; log replication; and safety. 
+
+Properties that are true at all times: %cite raft paper quotes
+\begin{itemize}
+\item Election Safety: at most one leader can be elected in a given term
+\item Leader Append-Only: a leader never overwrites or deletes entries in its log; it only appends new entries
+\item Log Matching: if two logs contain an entry with the same index and term, then the logs are identical in all entries up through the given index
+\item Leader Completeness: if a log entry is committed in a given term, then that entry will be present in the logs of the leaders for all higher-numbered terms
+\item State Machine Safety: if a server has applied a log entry at a given index to its state machine, no other server will ever apply a different log entry for the same index
+\end{itemize}
+
+A node can be in one of three states at any time. The possible states are leader, follower, or candidate. 
+%Picture with state changes
+When the system operates under normal conditions, there is exactly one server and all other nodes are followers. During the election of a new leader, there can be one or more candidates. The followers are passive, and only respond to requests from leaders or candidates. 
+
+Terms
+
+Remote procedure calls (RPC)
+%http://www.scs.stanford.edu/14au-cs244b/labs/projects/copeland_zhong.pdf bft raft
+
+
+%Not BFT
+%No problems with forking, as raft requires majority consensus before making a new block 
+
+
+
+
+
+
+
+
+%Byzantine Fault Tolerance is a form of "leader-follower" protocol. Private blockchains do not utilize proof of work as a consensus model. Rather, a Byzantine Fault Tolerance protocol can be used to ensure valid transactions. Requires more than one node in network 
+
+%Ripple and Stellar use open-ended (in regards to node participation) Byzantine fault tolerance as a consensus model
 Ripple requires each node to have a list of trusted nodes, each nodes list must have a 40\% overlap with other nodes in the network. Consensus in multiple rounds
 
-Support high transaction rates
-Low scalability. Over 20 nodes causes huge overhead in messages 
+%Support high transaction rates
+%Low scalability. Over 20 nodes causes huge overhead in messages 
 
 %Cross fault-tolerance
 
@@ -251,8 +284,9 @@ Turing-complete programming language for smart contracts
 %https://github.com/ethereum/wiki/wiki/White-Paper#a-next-generation-smart-contract-and-decentralized-application-platform
 
 Three types of applications on Ethereum platform; financial, semi-financial and non-financial. 
-
+\subsection{Tendermint}
 \subsubsection*{Smart Contracts}
+Turing complete
 Problem that they might not be hack safe 
 
 \subsection{Hyperledger}
