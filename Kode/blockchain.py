@@ -2,15 +2,18 @@ import hashlib
 import time
 
 class Block():
-    def __init__(self, *args):
-        self.index = None
-        self.previous_hash = None
-        self.timestamp = None
+    def __init__(self, index = 0, previous_hash = None, timestamp = 0, transactions = None, new_hash = None):
+        self.index = index
+        self.previous_hash = previous_hash
+        self.timestamp = timestamp
         self.transactions = []
-        self.new_hash = None
-        if args:
-            for arg in args:
-                self.transactions.append(arg)
+        self.new_hash = new_hash
+        if transactions:
+            for tx in transactions:
+                self.transactions.append(tx)
+        #if args:
+        #    for arg in args:
+        #        self.transactions.append(arg)
 
 
     def get_hash(self):
@@ -39,9 +42,9 @@ class Block():
         if self.new_hash != self.get_hash():
             return False
         #Make sure time between two blocks is not more than 60 seconds unless genesis
-        if neighbour_block.index != 0:
-            if (self.timestamp - neighbour_block.timestamp) > 60:
-                return False
+        #if neighbour_block.index != 0:
+        #    if (self.timestamp - neighbour_block.timestamp) > 60:
+        #        return False
         return True
 
     def propose_block(self, head_block):
@@ -82,7 +85,7 @@ class Blockchain():
         Hard coded genesis block, same for all nodes
         """
         genesis = Block()
-        genesis.index = 0
+        genesis.index = 1
         genesis.previous_hash = 0
         genesis.timestamp = 0
         genesis.new_hash = genesis.get_hash()

@@ -1,25 +1,44 @@
 import pickle, random, time
 
 def send_hello(conn, nodeid, hostport):
-    msg = {'msgtype': 'hello', 'nodeid': nodeid, 'hostport': hostport} #Add IP?
+    msg = {
+        'msgtype': 'hello', 
+        'nodeid': nodeid, 
+        'hostport': hostport
+    } #Add IP?
     send_msg(conn, msg)
 
 def send_hello_ack(conn, nodeid, hostport):
-    msg = {'msgtype': 'ack', 'nodeid': nodeid, 'hostport': hostport} #Add IP?
+    msg = {
+        'msgtype': 'ack', 
+        'nodeid': nodeid, 
+        'hostport': hostport
+    } #Add IP?
     send_msg(conn, msg)  
 
 def send_peers(conn, peers):
-    msg = {'msgtype':'peer', 'peers': peers}
+    msg = {
+        'msgtype':'peer', 
+        'peers': peers
+    }
     send_msg(conn, msg)         
 def send_ping(conn, nodeid):
     """
     Pings from both server and client side TODO fix better ping/pong
     """
-    msg = {'msgtype':'ping', 'time':time.time(), 'nodeid': nodeid}
+    msg = {
+        'msgtype':'ping', 
+        'time':time.time(), 
+        'nodeid': nodeid
+    }
     send_msg(conn, msg)
 
 def send_pong(conn, nodeid):
-    msg = {'msgtype':'pong', 'time':time.time(), 'nodeid': nodeid}
+    msg = {
+        'msgtype':'pong', 
+        'time':time.time(), 
+        'nodeid': nodeid
+    }
     send_msg(conn, msg)
 
 

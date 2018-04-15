@@ -71,14 +71,18 @@ class Peer(IntNStringReceiver):
 		
 		else:
 			#Handle other messages in Node/Peer_Factory
-			if msg_type != 'append_entries':print(msg)
+			#if msg_type != 'append_entries':print(msg)
 			self.factory.parse_msg(msg_type, msg, self) #self is connection received from
 
 	def send_hello(self):
 		"""
-		Initial hello needs to be part of protocol to initate callback to start protocol
+		Initial hello message needs to be part of protocol to initate callback to start protocol
 		"""
-		msg = {'msgtype': 'hello', 'nodeid': self.factory.nodeid, 'hostport': self.factory.hostport} #Add IP?
+		msg = {
+			'msgtype': 'hello', 
+			'nodeid': self.factory.nodeid, 
+			'hostport': self.factory.hostport
+		} #Add IP?
 		self.sendString(pickle.dumps(msg))
 
 
@@ -96,7 +100,7 @@ class Peer(IntNStringReceiver):
 			self.factory.new_conn({self.remote_nodeid: self})
 
 		if not self.ping.running:
-				self.ping.start(PING_INTERVAL) #Ping every 30 minutes (seconds for testing) 
+				self.ping.start(PING_INTERVAL)  
 
 
 	def handle_peers(self, msg):
@@ -104,20 +108,7 @@ class Peer(IntNStringReceiver):
 		Start making blocks if initial node, or request head block if connecting to a node
 		Connect to peers received from other node
 		"""
-		"""
-		if not msg['peers']: 
-			self.factory.initial = True
-			#if not self.factory.b_call.running:
-			#	self.factory.b_call.start(10) #Make variable			
-		else: 
-			#Connecting to network where a blockchain already exists - needs to be updated
-			#Only request from one peer
-			#TODO: Move to leader/follower handling
-			if self.factory.requested == False:
-				reactor.callLater(1,self.factory.req_head_block)
-				self.factory.requested = True
-		"""
-
+	
 		for peer in msg['peers']:
 			host = msg['peers'][peer]
 			#Make connections to peers not already connected too
@@ -236,4 +227,3 @@ class PeerManager(Factory):
 		
 		self.connect_to_peer(connect_port)
 		
-		reactor.run()

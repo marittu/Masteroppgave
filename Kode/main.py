@@ -1,5 +1,5 @@
 from node import Node
-from storage import Log
+from storage import Config
 import sys, optparse, uuid
 from twisted.internet import reactor
 from twisted.python import log
@@ -33,7 +33,7 @@ def parse_args():
 #Start server and client in same method and use tcpendpoints?
 
 def main():
-    #log.startLogging(sys.stdout)
+    log.startLogging(sys.stdout)
     host, connect = parse_args()
 
     """
@@ -43,18 +43,22 @@ def main():
     otherwise it creates a new log with a new nodeid
     """
     try:
-        with open('Log/'+str(host)+'.txt', 'r') as f:
-            nodeid = f.readline()
-        f.close()
-        log = Log(str(host))
+        with open('Log/Config/'+str(host)+'_config.txt', 'r') as f:
+            nodeid = f.readline().rstrip()
+
+        config_log = Config(str(host))
+    
     except:
         nodeid = str(uuid.uuid4())
-        print(nodeid)
-        log = Log(str(host)) #update on stable storage
-        log.write(nodeid)
-    
+        config_log = Config(str(host))
+        
+        #Write nodeid to stable storage and initialize empty vote
+        config_log.write(nodeid)
+        
+        
 
-    node = Node(host, nodeid, log)
+    print(nodeid)
+    node = Node(host, nodeid, config_log)
     node.run_node(host, connect, nodeid)
 
     reactor.run()
