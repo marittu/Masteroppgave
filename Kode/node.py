@@ -2,7 +2,7 @@ from peer import PeerManager
 from blockchain import Block, Blockchain
 
 from consensus import Validator
-from storage import Proposed_blocks_log
+from storage import Proposed_blocks_log, Blockchain_log, clean_string, string_to_block
 import messages
 
 import time, random
@@ -30,15 +30,15 @@ class Node(PeerManager):
         """
         super().__init__(hostport, nodeid)
         self.peers_alive = {}
-        self.blockchain = Blockchain() #WRITE GENESIS BLOCK TO LOG - CHIAN UPDATED IN SM IF COMMIT INDEX > LAST APPLIED
+        self.blockchain_log = Blockchain_log(str(hostport)) #WRITE GENESIS BLOCK TO LOG - CHIAN UPDATED IN SM IF COMMIT INDEX > LAST APPLIED
         self.proposed_block_log = Proposed_blocks_log(str(hostport))
         self.head_block = None
         self.config_log = config_log 
-
         
         self.i = 0
         self.validator = Validator(self.nodeid, self.reactor, self.connections, self.config_log, self.proposed_block_log, hostport)
-        self.get_head_block_and_index()
+        self.get_head_block_and_index() #TODO; MAKE OWN FUNCTION ONLY RUNNING AT INIT
+        self.validator.commit_index = self.blockchain_log.last_index()
         LoopingCall(self.state_machine).start(4) 
         
         
@@ -65,8 +65,14 @@ class Node(PeerManager):
                 self.validator.last_log_index += 1
                 self.validator.last_log_term = self.validator.current_term
                 self.validator.proposed_block_log.write(self.validator.current_term, self.validator.last_log_index, propose_block)
+                self.validator.start_block_timeout() 
             self.i += 1
-            #Check for new peers and get them up to date before sending append_entries
+            
+            if self.validator.block_majority():
+                if self.validator.block_timeout != None:
+                    self.validator.stop_block_timeout()
+                self.commit_index = self.validator.last_log_index
+
         
         if self.validator.state == FOLLOWER:
             if self.validator.propose_block is not None:
@@ -84,23 +90,17 @@ class Node(PeerManager):
                 else:
                     self.validator.accepted_block = False
 
+        if self.validator.commit_index > self.blockchain_log.last_index():
+            index = self.blockchain_log.last_index() + 1
+            while index <= self.validator.commit_index:
+                block = self.validator.proposed_block_log.get_block(index)
+                if block is not None:
+                    self.blockchain_log.write(block)
+                    index = self.blockchain_log.last_index() + 1 
+                else:
+                    break
 
-            #Should it be in state_machine? Move to function to trigger response when received
 
-        #if self.validator.commit_index > self.head_block.index:
-        #    pass
-            #new_block_index = self.validator.last_applied + 1
-            #commit_block = get_block(new_block_index)
-            #self.blockchain.add_block(commit_block)
-            #self.validator.last_applied = new block_index
-
-        """
-        if new transaction:
-            broadcast to peers
-
-        if transaction received validate via smart contract (?)
-        send validation to leader for transaction to be added to block
-        """
 
     def get_head_block_and_index(self):
         """
@@ -109,28 +109,27 @@ class Node(PeerManager):
         """
         try:
             line = self.validator.proposed_block_log.read().split(',')
-
-            strip = " '[]\"{}()\\n"
-            index = str(line[0]).translate(str.maketrans('', '', strip))
-            term = str(line[1]).translate(str.maketrans('', '', strip))
-            self.validator.last_log_index = int(index)
-            self.head_block = self.validator.proposed_block_log.string_to_block(line[2:])
-            self.validator.last_log_term = int(term)
-            #self.head_block.print_block()
+            self.validator.last_log_index = int(clean_string(line[0]))
+            self.validator.last_log_term = int(clean_string(line[1]))
+            
+            self.head_block = string_to_block(line[2:])
+             
+            
         except:
             print("except in get block and index")
-            self.create_block_log()
+            self.write_genesis()
     
     def get_vote(self):
         line = self.validator.proposed_block_log.read().split(',')
         #self.validator.voted_for = line[2]
 
-    def create_block_log(self):
+    def write_genesis(self):
+        block = Block()
         self.validator.last_log_index = 1
-        self.head_block = self.blockchain.genesis
+        self.head_block = block.get_genesis()
         self.head_block.print_block()
         self.validator.proposed_block_log.write(0, self.validator.last_log_index, self.head_block)
-        
+        self.blockchain_log.write(self.head_block)
 
     def consensus_message(self, msg_type, msg, conn):
         """

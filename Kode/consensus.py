@@ -13,7 +13,7 @@ from twisted.internet import reactor
 from twisted.internet.task import LoopingCall
 import time, random, pickle, string
 import messages
-from storage import Vote
+from storage import Vote, clean_string
 
 FOLLOWER = 1 # move to config file
 CANDIDATE = 2
@@ -31,7 +31,7 @@ class Validator():
         self.config_log = config_log
         self.proposed_block_log = proposed_block_log #INITIALIZE LOG HERE? TRY TO READ AND IF NOT MAKE NEW WITH EMPTY FIRST VOTE
         self.vote_log = Vote(hostport)
-        self.state = FOLLOWER #Make None and become follower when up to date
+        self.state = FOLLOWER 
         
         self.votes = 0
         self.voted_for = None
@@ -57,13 +57,12 @@ class Validator():
         self.connections = connections
         #self.followers = {} MAYBE USE TO EXTRACT NODES WITH NONE STATE
 
+        self.block_timeout = None
         self.election_timeout = None        
         self.reset_election_timeout()
        
         self.accepted_block = None
         self.propose_block = None
-        #If a new node joins the system, have variable sync = False until leader validates node is up to date
-        #Up to date requires same blockchain, and possible new pre-commits
 
  
 
@@ -75,16 +74,19 @@ class Validator():
         #MOVE ALL MSG TO MESSAGES MODULE
         for nodeid, conn in self.connections.items():
             if nodeid != self.nodeid:
-                prev_term = self.last_log_term
+                prev_term = self.last_log_term 
                 block_term = self.current_term
                 index = self.last_log_index
+                block_index = self.last_log_index + 1
+                
                 if self.next_index[nodeid] < self.last_log_index + 1:
                     index = self.next_index[nodeid] - 1
                     res = self.proposed_block_log.get_block_term_from_index(self.next_index[nodeid])
                     if res != None:
-                        prev_term = int(res[0])
+                        prev_term = int(res[0]) 
                         block_term = int(res[1])
                         propose_block = res[2]
+                        block_index = propose_block.index
                 msg = {
                     'msgtype': 'append_entries', 
                     'term': self.current_term,
@@ -93,7 +95,8 @@ class Validator():
                     'prev_term': prev_term,   #term of prev proposed block
                     'leader_commit': self.commit_index, #Index of proposed block ready for commiting to chain
                     'propose_block': propose_block,
-                    'block_term': block_term
+                    'block_term': block_term,
+                    'block_index': block_index
                 } 
 
                 messages.send_to_conn(msg, conn)
@@ -109,66 +112,53 @@ class Validator():
         Respond to leader with own log info
         """
         self.reset_election_timeout()
-        if self.state is not None:
 
-            success = True
-            print(msg)
+        success = True
+        print(msg)
 
-            #New leader
-            if msg['leaderid'] != self.leader_id:
-                self.leader_conn = conn
-                self.leader_id = msg['leaderid']
-                
-                if msg['term'] > self.current_term:
-                    self._follower_new_term() 
-                    self.current_term = msg['term']
-                
-                #Step down from candidate because recognized a new leader 
-                elif msg['term'] == self.current_term and self.state == CANDIDATE:
-                        self.state = FOLLOWER
-                        print("FOLLOWER")
+        #New leader
+        if msg['leaderid'] != self.leader_id:
+            self.leader_conn = conn
+            self.leader_id = msg['leaderid']
+            
+            if msg['term'] > self.current_term:
+                self._follower_new_term() 
+                self.current_term = msg['term']
+            
+            #Step down from candidate because recognized a new leader 
+            elif msg['term'] == self.current_term and self.state == CANDIDATE:
+                    self.state = FOLLOWER
+                    print("FOLLOWER")
 
-            if msg['term'] < self.current_term:
-                success = False 
+        if msg['term'] < self.current_term:
+            success = False 
 
-            #interate through log in reverse until index match, if term doesnt match for index - FALSE
-            entry = self.proposed_block_log.find_index_term(msg['prev_index'], msg['prev_term'])
-            #print('Entry', entry)
-            if entry == None:
-                #No entry for index
-                success = False
-            elif entry == False:
-                #print(msg['prev_index'], msg['prev_term'])
-                #print(self.last_log_index, self.last_log_term)
-                print("Updated log")
-                num_lines = self.last_log_index - msg['prev_index'] + 1
-                print(num_lines)
-                self.proposed_block_log.update_index(num_lines)
-                success = True
-                #Update entry and delete following entries
-            elif entry == True:
-                #Log up to date
-                success = True
-                
-            #Set below variables and handle in state machine in node 
-            #Append new entries not already in log
-            self.propose_block = msg['propose_block']
-            if self.propose_block != None:
-                #self.propose_block.print_block()
-                #print(self.propose_block)
-                #self.block_term = msg['prev_term']
-                self.last_log_index = msg['prev_index'] + 1
-                self.block_term = msg['block_term']
-                #validate
-            else:
-                self.propose_block = None
+        #interate through log in reverse until index match, if term doesnt match for index - FALSE
         
-            if msg['leader_commit'] > self.commit_index:
-                pass 
-                #self.commit_index = min(leadercommit, index of last proposed block in log)
-                #Commit proposed_block at commit_index (and previous blocks) to blockchain
-            #if log doesn't contain an entry at prev_log_index  whose term matches perv_log_term
-                #success = False
+        entry = self.proposed_block_log.find_index_term(msg['prev_index'], msg['prev_term'])
+        if entry == None:
+            #No entry for index
+            success = False
+        elif entry == False:
+            print("Updated log")
+            self.proposed_block_log.update_index()
+            success = False
+            #Update entry and delete following entries
+        elif entry == True:
+                success = True
+            
+        #Set below variables and handle in state machine in node 
+        #Append new entries not already in log
+        self.propose_block = msg['propose_block']
+        if self.propose_block != None:
+            self.last_log_index = msg['block_index']
+            self.block_term = msg['block_term']
+            
+        if msg['leader_commit'] > self.commit_index:
+            self.commit_index = min(msg['leader_commit'], self.last_log_index)
+            print("in consensus", self.commit_index)
+            #Commit proposed_block at commit_index (and previous blocks) to blockchain
+    
         msg = { 
             'msgtype': 'respond_append_entries', 
             'nodeid': self.nodeid, 
@@ -187,23 +177,10 @@ class Validator():
         if msg['success'] == True:
             self.match_index[nodeid] = msg['last_index']
             self.next_index[nodeid] = msg['last_index'] + 1
-            
-            if self.next_index[nodeid] < self.last_log_index +1:
-                print("Found match but need blocks")
-                res = self.proposed_block_log.get_block_term_from_index(self.next_index[nodeid])
-                term = res[0] 
-                propose_block = res[1]
-                #propose_block.print_block()
-                
-    
+
         else:
             self.next_index[nodeid] = self.next_index[nodeid] - 1
-            res = self.proposed_block_log.get_block_term_from_index(self.next_index[nodeid])
-            if res is not None:
-                term = res[0] 
-                propose_block = None#res[1]
-   
-           
+       
        
     def request_votes(self):
         #get_log() for prev_log
@@ -229,11 +206,12 @@ class Validator():
             
             if msg['last_log_index'] >= self.last_log_index and \
             msg['last_log_term'] >= self.last_log_term:
-        
+                if msg['term'] > self.current_term:
+                    self.current_term = msg['term']
+                
                 vote_granted = True
                 self.voted_for = msg['candidate_id']
-                
-                self.vote_log.write({self.msg['term']: self.voted_for})
+                self.vote_log.write({self.current_term: self.voted_for})
 
 
         respond_msg = {
@@ -244,8 +222,7 @@ class Validator():
         }
 
         messages.send_to_conn(respond_msg, conn) 
-        if msg['term'] > self.current_term:
-            self.current_term = msg['term']        
+                
 
     def receive_vote(self, msg):
         """
@@ -258,7 +235,6 @@ class Validator():
             if msg['vote_granted']:
                 self.votes += 1 
             if self.votes > int((len(self.connections))/2): 
-                print(len(self.connections))
             #TODO: subtract voters not allowed to participate yet
                 self._become_leader()
 
@@ -278,9 +254,9 @@ class Validator():
         
 
     def _initialize_views(self):
-        for conn in self.connections:
-            self.next_index[conn] = self.last_log_index + 1 #index of next log entry to send to each node
-            self.match_index[conn] = 0 #index of highest log entry know to be replicated on server
+        for node in self.connections:
+            self.next_index[node] = self.last_log_index + 1 #index of next log entry to send to each node
+            self.match_index[node] = 0 #index of highest log entry know to be replicated on server
 
 
     def _follower_new_term(self):
@@ -288,6 +264,32 @@ class Validator():
         print("FOLLOWER")
         self.votes = 0
         self.voted_for = None
+
+    def block_majority(self):
+        quorum = int((len(self.connections))/2)
+        match = 1 #Leader
+        for node in self.connections:
+            if self.match_index[node] == self.last_log_index:
+                match += 1
+        if match > quorum and match != 1: #cannot commit of only node in network
+            self.stop_block_timeout()
+            self.commit_index = self.last_log_index
+            return True
+        return False
+
+
+    def start_block_timeout(self):
+        if self.state == LEADER:
+            self.block_timeout = self.reactor.callLater(10, self.step_down)
+
+    def stop_block_timeout(self):
+        if self.block_timeout != None: self.block_timeout.cancel()
+        self.block_timeout = None
+
+    def step_down(self):
+        if self.state == LEADER:
+            self.state = FOLLOWER
+            self.reset_election_timeout()
 
     def reset_election_timeout(self):
         """
@@ -298,7 +300,7 @@ class Validator():
             if self.election_timeout != None and self.election_timeout.active():
                 self.election_timeout.cancel() 
 
-            self.election_timeout = self.reactor.callLater(5 + random.randint(300,500)/1000.0, self.start_leader_election)
+            self.election_timeout = self.reactor.callLater(5 + random.randint(100,900)/1000.0, self.start_leader_election)
 
     def start_leader_election(self):
         """
@@ -346,11 +348,9 @@ class Validator():
         """
         Helper function for updating current_term and voted_for from log
         """
-        votes = self.vote_log.read()
+        votes = self.vote_log.read().split(':')
         
-        self.current_term = int(votes.split(':')[0].strip('{'))
-        voted = votes.split(':')[1]
-        strip = " '}'"
-        self.voted_for = str(voted).translate(str.maketrans('', '', strip))
+        self.current_term = int(clean_string(votes[0]))
+        self.voted_for = str(clean_string(votes[1]))
        
         

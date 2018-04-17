@@ -34,7 +34,9 @@ class Block():
         Validate block based on the latest commited block in the chain
         TODO: validate transactions in block
         """
-
+        print(self.index, neighbour_block.index + 1)
+        print(self.previous_hash, neighbour_block.new_hash)
+        print(self.new_hash, self.get_hash)
         if self.index != neighbour_block.index + 1:
             return False
         if self.previous_hash != neighbour_block.new_hash:
@@ -72,6 +74,17 @@ class Block():
             return False
 
         return True     
+
+    def get_genesis(self):
+        """
+        Hard coded genesis block, same for all nodes
+        """
+        genesis = Block()
+        genesis.index = 1
+        genesis.previous_hash = 0
+        genesis.timestamp = 0
+        genesis.new_hash = genesis.get_hash()
+        return genesis
 
 
 class Blockchain():

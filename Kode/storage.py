@@ -4,61 +4,15 @@ import time, os
 from datetime import datetime
 
 #TODO: MAKE DEFERRED
-class Log():
-    def __init__(self, port):
-        self.f = None
-        self.filename = 'Log/'+port+'.txt'
-        """
-        self.voted_for = None #update on stable storage   
-        self.current_term = 0 #update on stable storage        
-        self.last_log_index = 1 #highest log entry known, not yet commited (latest validated propose_block), 1 because node_id at 0
-        self.last_log_term = 0 #term of last_log_index
-        self.last_commited = 0 #highest log entry applied to state machine (index of head_block)
-        """
-    """
-    def open_file(self):
-        with open(self.filename, 'a') as self.f:
-            d = Deferred()
-        return d
-
-    def _write(self):
-        self.f.write('data')
-
-
-    def write(self, data):
-        d = self.open_file()
-        d.addCallback(self._write)
-        d.addErrback(print("err"))
-        
-        self.f.close()
-
-    def read(self):
-        with open(self.filename, 'r') as f:
-            line = f.readline().rstrip()
-
-        print(line)
-        f.close()
-    """
-
-    def write(self, data):
-        with open(self.filename, 'a') as f:
-                f.write(data+'\n')
-        f.close()
-
-    def read(self):
-        with open(self.filename, 'r') as f:
-            line = f.readline().rstrip()
-
-        print(line)
-        f.close()
-
 class Proposed_blocks_log():
     def __init__(self, port):
         self.port = port
         self.filename = 'Log/Blocks/'+str(port)+'_blocks.txt'
+        if not os.path.exists(os.path.dirname(self.filename)):
+            os.makedirs(os.path.dirname(self.filename))
 
     def write(self, term, index, block):
-        data = index, term, self.block_to_string(block) #Voted_for
+        data = index, term, block_to_string(block) #Voted_for
         try:    
             with open(self.filename, 'r+') as f:
             
@@ -73,73 +27,57 @@ class Proposed_blocks_log():
     def read(self):
         with open(self.filename, 'r') as f:
             line = f.readline()
-            return line 
+        return line 
 
-    def block_to_string(self, block):
-        string = {
-            'Index': block.index,
-            'Previous hash': block.previous_hash,
-            'Timestamp': block.timestamp,#time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(block.timestamp))),
-            'Transactions': block.transactions,
-            'Block hash': block.new_hash,
-        }
-        return string
+    
 
-    def string_to_block(self, string):
-        index = int(self.clean_string(string[0].split(':')[1:]))
-        previous_hash = self.clean_string(string[1].split(':')[1:])
-        timestamp = float(self.clean_string(string[2].split(':')[1:]))
-        transactions = self.clean_string(string[3].split(':')[1:])
-        new_hash = self.clean_string(string[4].split(':')[1:])
-        return Block(index, previous_hash, timestamp, transactions, new_hash)
-
-    def clean_string(self, string):
-        strip = " '[]\"{}()\\n"
-        new_string = str(string).translate(str.maketrans('', '', strip))
-        return new_string
-
-    """
-    def get_vote(self):
-
-    """
 
     def find_index_term(self, index, term):
         with open(self.filename, 'r') as f:
             for l in f:
                 line = l.split(',')
-                
-                if int(self.clean_string(line[0])) < index: #the index is higher than the largest entry in the file
-                    #print(line[0])
-                    #print(index)
-                    return None 
-
-                if int(self.clean_string(line[0])) == int(index):
-                    if int(self.clean_string(line[1])) == int(term):
-                        print("FOUND MATCH")
+                if int(clean_string(line[0])) == int(index): 
+                    if int(clean_string(line[1])) == int(term):
                         return True
+
                     else:
-                        print("NOT TERM MATCH")
                         return False
+        return None
 
     def get_block_term_from_index(self, index):
         with open(self.filename, 'r') as f:
             for l in f:
                 line = l.split(',')
-                
-                if int(self.clean_string(line[0])) == index:
-                    block = self.string_to_block(line[2:])
-                    block_term = int(self.clean_string(line[1]))
-                if int(self.clean_string(line[0])) == index - 1:
-                    prev_term = int(self.clean_string(line[1]))
+                #if index > int(clean_string(line[0])):
+                #    return None
+                if int(clean_string(line[0])) == index:
+                    block = string_to_block(line[2:])
+                    block_term = int(clean_string(line[1]))
+                if int(clean_string(line[0])) == index - 1:
+                    prev_term = int(clean_string(line[1]))
                     return (prev_term, block_term, block)
 
-    def update_index(self, num_lines):
+    def get_block(self, index):
+        with open(self.filename, 'r') as f:
+            for l in f:
+                line = l.split(',')
+                if int(clean_string(line[0])) == index:
+                    return string_to_block(line[2:])
+
+
+
+    def update_index(self):
+        """
+        Node has entry not matching with the leader
+        Deletes conflicting entry
+        TODO: Somewhat inefficient way to do it 
+        """
         out_file = 'Log/Blocks/'+str(self.port)+'_blocks_temp.txt'
         with open(self.filename, 'r+') as f, open(out_file, 'w')as out:
             i = 0
             for line in f:
-                if i < num_lines:
-                    i += 1
+                if i < 1:
+                    i = 1
                 else:
                     out.write(line)
 
@@ -148,8 +86,34 @@ class Proposed_blocks_log():
 
     
 class Blockchain_log():
-    def __init__(self):
-        pass
+    def __init__(self, port):
+        self.filename = 'Log/Blockchain/'+str(port)+'_blockchain.txt'
+        if not os.path.exists(os.path.dirname(self.filename)):
+            os.makedirs(os.path.dirname(self.filename))
+
+    def write(self, data):
+        block = block_to_string(data)
+        try:    
+            with open(self.filename, 'r+') as f:
+            
+                content = f.read()
+                f.seek(0, 0)
+                f.write(str(block).rstrip('\r\n') + '\n' + content)
+        except:
+            with open(self.filename, 'a+') as f:
+                f.write(str(block)+'\n')
+    
+
+    def read(self):
+        with open(self.filename, 'r') as f:
+            line = f.readline()
+            
+        return line
+
+    def last_index(self):
+        block = string_to_block(self.read().split(','))
+        return block.index
+
 
 class Vote():
     """
@@ -158,6 +122,8 @@ class Vote():
     """
     def __init__(self, port):
         self.filename = 'Log/Vote/'+str(port)+'_votes.txt'
+        if not os.path.exists(os.path.dirname(self.filename)):
+            os.makedirs(os.path.dirname(self.filename))
 
     def write(self, data):
        
@@ -175,12 +141,8 @@ class Vote():
     def read(self):
         with open(self.filename, 'r') as f:
             line = f.readline()
-            return line
-            #.rstrip()
-        #for line in reversed(list(open(self.filename))):
-        #    print(line.rstrip())
-        #    return(line.rstrip())
-        #    break
+            
+        return line 
 
 class Config():
     """
@@ -205,3 +167,29 @@ class Config():
 class ConsumedEnergy():
     def __init__(self):
         pass
+
+
+
+def clean_string(string):
+    strip = " '\'[]\"{}()\\n"
+    new_string = str(string).translate(str.maketrans('', '', strip))
+    return new_string
+
+def block_to_string(block):
+    string = {
+        'Index': block.index,
+        'Previous hash': block.previous_hash,
+        'Timestamp': block.timestamp,
+        'Transactions': block.transactions,
+        'Block hash': block.new_hash,
+    }
+    return string
+
+def string_to_block(string): 
+    index = int(clean_string(string[0].split(':')[1:]))
+    previous_hash = clean_string(string[1].split(':')[1:])
+    timestamp = float(clean_string(string[2].split(':')[1:]))
+    transactions = clean_string(string[3].split(':')[1:])
+    new_hash = clean_string(string[4].split(':')[1:])
+    
+    return Block(index, previous_hash, timestamp, transactions, new_hash)
