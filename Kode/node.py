@@ -89,6 +89,9 @@ class Node(PeerManager):
                     self.validator.proposed_block_log.write(self.validator.block_term, self.validator.last_log_index , self.validator.propose_block)
                 else:
                     self.validator.accepted_block = False
+                    if self.validator.propose_block.index == self.validator.last_log_index + 1:
+                        self.validator.proposed_block_log.update_index()
+                    
 
         if self.validator.commit_index > self.blockchain_log.last_index():
             index = self.blockchain_log.last_index() + 1
