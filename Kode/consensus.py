@@ -37,13 +37,15 @@ class Validator():
         self.voted_for = None
         self.current_term = 0
         try: 
-            self._read_vote_log() #Update self.current_term and self.voted_for from stable storage
+            self.current_term = self.vote_log.get_term()
+            self._read_vote_log() #Update self.voted_for from stable storage
+            
         except:
             self.vote_log.write({self.current_term: self.voted_for})
         
         self.last_log_index = 0 #highest log entry known, not yet commited (latest propose_block)
         self.last_log_term = 0 #term of last log index
-        self.block_term = 0
+        self.block_term = 0 #TODO: REMOVE
         self.commit_index = 0 #highest log entry applied to state machine (index of head_block)
         
         self.leader_conn = None
@@ -61,7 +63,6 @@ class Validator():
         self.election_timeout = None        
         self.reset_election_timeout()
        
-        self.accepted_block = None
         self.propose_block = None
 
  
@@ -126,8 +127,8 @@ class Validator():
                 self.current_term = msg['term']
             
             #Step down from candidate because recognized a new leader 
-            elif msg['term'] == self.current_term and self.state == CANDIDATE:
-                    self.state = FOLLOWER
+            elif msg['term'] == self.current_term:#
+                    if self.state == CANDIDATE: self.state = FOLLOWER
                     print("FOLLOWER")
 
         if msg['term'] < self.current_term:
@@ -200,11 +201,12 @@ class Validator():
         New nodes not updated are not allowed to participate in voting
         Grant vote if candidates term valid and log at least as up to date as node   
         """
-        vote_granted = False
+
+        self._read_vote_log()
+         vote_granted = False
         if (msg['term'] > self.current_term or (msg['term'] == self.current_term and \
         (self.voted_for == None or self.voted_for == msg['candidate_id'] ))):
-            
-            if msg['last_log_index'] >= self.last_log_index and \
+           if msg['last_log_index'] >= self.last_log_index and \
             msg['last_log_term'] >= self.last_log_term:
                 if msg['term'] > self.current_term:
                     self.current_term = msg['term']
@@ -312,7 +314,6 @@ class Validator():
         self.reset_election_timeout()
         print("CANDIDATE")
         self.state = CANDIDATE
-        
         self.current_term += 1
         self.voted_for = self.nodeid
         self.votes = 1
@@ -349,8 +350,9 @@ class Validator():
         Helper function for updating current_term and voted_for from log
         """
         votes = self.vote_log.read().split(':')
-        
-        self.current_term = int(clean_string(votes[0]))
-        self.voted_for = str(clean_string(votes[1]))
-       
-        
+        vote_term = int(clean_string(votes[0]))
+        if vote_term == self.current_term:
+            self.voted_for = str(clean_string(votes[1]))
+        else:
+            self.voted_for = None
+      

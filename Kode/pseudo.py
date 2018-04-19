@@ -62,12 +62,5 @@
 - Algorithms for deciding where to consume energy from
 - Let user decide on different variables e.g. pricing and availability
 
-#Project organizing
-- One class per script? 
-- Own scripts for helper functions
-- Message script
-- Make communication defferd and callback based
-
-"""
 
 #Run to completion?
