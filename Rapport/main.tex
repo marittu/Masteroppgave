@@ -24,6 +24,7 @@
 \newdateformat{monthyear}{\monthname[\THEMONTH], \THEYEAR}
 
 
+
 \begin{document}
 
 
@@ -45,9 +46,9 @@
 \import{./}{sammendrag.tex}
 \addcontentsline{toc}{chapter}{Sammendrag}
 
-%\let\cleardoublepage\clearpage
-%\import{./}{abriviations.tex}
-%\addcontentsline{toc}{chapter}{Abbreviations}
+\let\cleardoublepage\clearpage
+\import{./}{abbreviations.tex}
+\addcontentsline{toc}{chapter}{Abbreviations}
 
 \let\cleardoublepage\clearpage
 \tableofcontents
@@ -77,6 +78,8 @@
 \import{./}{spec.tex}
 \let\cleardoublepage\clearpage
 \import{./}{implementation.tex}
+\let\cleardoublepage\clearpage
+\import{./}{design.tex}
 \let\cleardoublepage\clearpage
 \import{./}{testing.tex}
 \let\cleardoublepage\clearpage

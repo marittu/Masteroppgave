@@ -1,0 +1,75 @@
+\chapter{Design}
+\section{System Architecture}
+FIGURES
+\subsection{Blockchain Layer}
+\subsection{Application Interface Layer}
+\subsection{Interaction Between Layers}
+
+
+\section{Block Module}
+The block module consists of a \textit{Block} class. The attributes of the class are the index of the block, which is the number of the block in the blockchain where the genesis block starts at 0; the hash of the block immediately preceding the block; a timestamp of when the block was created; the transactions included in the block; and the new hash of the block. 
+
+The block hash is calculated using the python hashlib \cite{hashlib} library. It uses SHA-256 hash algorithm based on the index, previous hash, timestamp and transactions in the block, thus creating a unique hash for every block. The \textit{hexdigest} method is used to return a string object of double size, containing only hexadecimal digits, for better readability. 
+
+Other methods in the class include \textit{validate\textunderscore block} for validation of a new block, based on the previous block: \textit{propose\textunderscore block} to create a new block, based on the previous block and the current time; and \textit{assert\textunderscore equal} to verify that two blocks are identical. 
+
+
+\section{Network Module}
+A peer-to-peer(p2p) network is implemented in the network module, using the Twisted \cite{twisted} framework. 
+
+The initial network node starts a server, and a client that connects to the server. Other nodes also start a server on a specified port number and a client which connects to a server already running on a given IP address and port number. 
+
+The module consists of two classes, a \textit{PeerManager} and a \textit{Peer}. The \textit{PeerManager} class is a Twisted factory, and is responsible for storing information about the peer, which is persistent between connections. This includes attributes such as a dictionary containing all connections to other peers, methods for adding and removing peers to the dictionary, as well as a method for starting a new client that connects to a new peer's server.
+
+\textit{Peer} is a subclass of the Twisted protocol \textit{IntNStringReceiver}. This means that each received message is a callback to the method \textit{stringReceived}. The \textit{Peer} class also keeps track of information in a connection between two peers. This includes a method for discovering when the connection is lost. The main method of the \textit{Peer} class is the \textit{stringReceived} method. Based on what message type was received, the method decides what to do with the message. 
+
+The initial message sent by a client, node A, connecting to a new server, node B, is the \textit{hello} message. This includes the clients node id, IP address, and host port which is information the server on node B keeps track of for all its peers. If the connection is successful, the server on node B acknowledges the message by sending its own node id, IP address, and port number for node A to store. Server B proceeds to send a message containing information about all its peers to node A. Node A then starts a new client for all the peers it is not already connected to and repeats the process described above. 
+
+Other messages received are processed in the factory, and further handled by the \textit{Node} object.
+
+
+\section{Node Module}
+%Make float chart
+The node module consists of a \textit{Node} class, which is a subclass of the \textit{PeerManager} class. The main component of the \textit{Node} class is the state machine, which is triggered by the reactor making a \textit{LoopingCall} at periodic intervals. 
+
+Every time the \textit{state\textunderscore machine} method is executed, the network leader sends out an \textit{append entries} RPC to all its followers. This lets the followers know that the leader is still operating. If new transactions are available, the leader creates a new block including these transactions, and proposes the block to its followers. If a follower finds a block valid, its stores the block in its log of proposed blocks during the next execution of the \textit{state machine} method. 
+
+The leader keeps a timer on the proposed block. If a timeout occurs before a majority has validated and accepted the block, the leader steps down, and a new election for a leader will start once the \textit{leader election timeout} occurs. However, if the majority validates and accepts the block before the timeout occurs, the leader will add the block to the blockchain, and notify its followers to do the same. 
+
+\section{Consensus Module}
+The consensus module used in this system is Raft. 
+
+The consensus module consists of a \textit{Validator} class. A \textit{Validator} object is created by the \textit{Node} object, to handle the validation and consensus in the blockchain. Once a \textit{Validator} object is created, a \textit{leader election timer} starts. The timeout is canceled if the node receives a message from a leader. If the timeout occurs, the \textit{start leader election} method is called. A node promotes itself to a candidate, starts a new term and votes for itself as leader before requesting votes from its peers with the \textit{request vote} RPC. 
+
+A follower receiving a \textit{request vote} RPC will vote for the candidate if it has not already vote in that term or not voted for someone else. The follower will also verify that the candidate's blockchain log is at least as up to date as its own before casting the vote. If the candidate receives a majority vote it will establish itself as leader by sending out an \textit{append entries} RPC. 
+
+Another possible outcome of the election process is that the candidate does not receive a majority vote before the election timeout occurs. It will then either promote itself as a candidate and start a new term, or receive a \textit{request vote} RPC from another candidate, who has started a new term.
+
+The third outcome is that several nodes become candidate at the same time. If a candidate receives an \textit{append entries} RPC from a different node, it will step down and become a follower. 
+
+As previously mentioned, leaders send out \textit{append entries} RPCs from the \textit{Node} object. Followers respond to the RPC in the \textit{Validator} object. With every RPC, the leader includes the previous log index and log term. In the \textit{respond append entries} method, a follower checks if it has this entry in its log and responds accordingly. If there is no entry, the leader decreases the index until a match is found. If there is a conflicting entry, the follower deletes its own entry and writes the leaders entry in the log. 
+
+If the \textit{append entries} RPC includes a new proposed block, the follower will validate the block and write the block to the log during the next run of the \textit{state machine}. 
+
+
+\section{Storage Module}
+In the \textit{storage} module, tasks related to reading and writing to file are handled. 
+
+Each node has four different logs, all containing information that must be kept intact in the case of a system failure. 
+
+\begin{itemize}
+\item\textbf{Config log}: Contains the node id, public and private key pair
+\item\textbf{Vote log}: Id of node who received vote for each term
+\item\textbf{Proposed blocks log}: Each log entry consists of the index, term and the block proposed by the leader
+\item\textbf{Blockchain}: Blocks in the actual blockchain
+\end{itemize}
+
+All new entries are appended to the top of the log, for more efficient reads. The \textit{proposed blocks log} also contains a method for deleting entries in case of conflicts. The \textit{blockchain log} is final and consistent across all nodes.
+
+\section{Message Module}
+The message module consists of the different messages that are sent between the peers in the system. Messages are sent between Twisted connections using transports and the built in Twisted method \textit{sendString}. 
+
+
+\section{Smart Contracts}
+Smart contracts enables automatic transfer of assets, once conditions are met. Thus, in contrast to traditional contracts, smart contracts does not only define the terms and conditions of an agreement, they also provide a method for enforcing the agreement.
+%Turing complete

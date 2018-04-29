@@ -23,12 +23,12 @@ class Validator():
     """
     Class for all nodes participating in consensus process
     """
-    def __init__(self, nodeid, reactor, connections, config_log, proposed_block_log, hostport):
+    def __init__(self, nodeid, reactor, connections, blockchain_log, proposed_block_log, hostport):
         
         self.reactor = reactor
         self.nodeid = nodeid 
 
-        self.config_log = config_log
+        self.blockchain_log = blockchain_log
         self.proposed_block_log = proposed_block_log #INITIALIZE LOG HERE? TRY TO READ AND IF NOT MAKE NEW WITH EMPTY FIRST VOTE
         self.vote_log = Vote(hostport)
         self.state = FOLLOWER 
@@ -199,15 +199,14 @@ class Validator():
         """
         Respond to candidates request to become leader
         New nodes not updated are not allowed to participate in voting
-        Grant vote if candidates term valid and log at least as up to date as node   
+        Grant vote if candidate's blockchain is up to date   
         """
 
         self._read_vote_log()
-         vote_granted = False
+        vote_granted = False
         if (msg['term'] > self.current_term or (msg['term'] == self.current_term and \
         (self.voted_for == None or self.voted_for == msg['candidate_id'] ))):
-           if msg['last_log_index'] >= self.last_log_index and \
-            msg['last_log_term'] >= self.last_log_term:
+            if msg['last_log_index'] >= self.blockchain_log.last_index():
                 if msg['term'] > self.current_term:
                     self.current_term = msg['term']
                 
@@ -237,7 +236,6 @@ class Validator():
             if msg['vote_granted']:
                 self.votes += 1 
             if self.votes > int((len(self.connections))/2): 
-            #TODO: subtract voters not allowed to participate yet
                 self._become_leader()
 
 
@@ -320,7 +318,7 @@ class Validator():
     
         print(self.current_term)
         self.vote_log.write({self.current_term: self.voted_for})
-        if len(self.connections) == 1:
+        if len(self.connections) == 1: #Remove possibility to become leader if only one node
             self._become_leader()
         else:
             self.request_votes()

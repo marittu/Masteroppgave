@@ -1,64 +1,23 @@
-\chapter{Design}
-It is assumed that there is central token handler, that issues tokens when a deposit is made into a wallet of a node. Producers can also exchange there tokens for currency at the token handler.
+\chapter{Implementation}
+Following is a list of the resources used in this system implementation:
+\begin{itemize}
+\item Python for implementation of the system
+\item Python framework Twisted for network communication
+\item Website?
+\end{itemize}
 
-It is also assumed that some form of hardware that can measure electricity consumption and report back to the blockchain node. Transmission lines and other aspects related to the transfer of electricity is not part of the scope for this thesis.
+\section{Python}
+Python \cite{python} was chosen as the programming language for the system implementation in this thesis. This is due to Pythons multipurpose abilities, and the intuitive syntax and programming style, which enables a rapid program development. Python also possesses characteristics like object-orientation, as well as being modular and dynamic. There exists a wide range of modules and libraries in Python. One of these libraries is the unit test framework, which supports test automation and and eases code testing.
 
-\section{Blockchain Module}
-Class for blocks
+\section{Twisted}
+Twisted \cite{twisted} is a networking engine written in Python.
+Some of the main components of the Twisted library are described below:
+\begin{itemize}
+\item \textbf{Reactor}: The reactor reacts to events in a loop and dispatches them to predetermined callback functions that handle the events. The event loop runs endlessly, unless it is told to stop. 
 
-Class for blockchain
+\item \textbf{Protocols}: Each protocol object in Twisted represents one connection. Protocols handle network events in an asynchronously manner. The protocol is responsible for handling incoming data, and new connections and lost connections of peers.
 
-Genesis
-Validation
-hashlib.sha256 for hashes 
+\item \textbf{Factory}: Protocol instances are created in the factory, one for each connection. The factory utilize the protocol for communication with its peers. Information that is persistent across connections is stored in the factory.
 
-\section{Network Module}
-Peer to Peer network implemented with Python framework Twisted. Asynchronous. Event based. The initial node starts a server and connects to itself. Other nodes connect to a server already running on a given port. Hello message is sent from node trying to connect and receives and hello ack if connection is successful. Connecting node receives a list of peers from the node it connected to and tries to connect to them in the same manner.
-
-Send hello
-Ack hello
-Start ping
-Respond with pong
-If 3 pings unresponded - remove peer
-Also drop peer in peer list if connection is dropped and notified
-
-Connecting node receives other peers in network, connects to peers and repeat above process until no unconnected peers or max peers connected
-Starts a new client for every peer it connects to
-Peers receive connections on server if they are being connected to
-Reactor
-Deferreds, callback and errback chain
-
-
-Lock for transactions?
-
-No protection against brute force attacks on network
-
-Store all peers since finite size of network?
-\section{Node Module}
-%Make float chart
-Initial node starts blockchain
-Connecting nodes compare local head block to peer
-If not the same, receive blockchain if other peer has connecting peers head block in chain
-Validate blockchain and query other peers for head block and receive blockchain if its not the same
-When blockchains are the same start creating blocks
-When new block created, it is proposed to the other peers, they validate block and accept it and sets it to be local head block 
-
-
-\section{Consensus Module}
-The consensus module used in this system is Raft. 
-
-Raft - can handle fail-stop not Byzantine fails
-Random Timeout
-If no leader msg received before a timeout -> become leader
-If no timeout - become candidate or follower (how many candidates?)
-TX shared in local mempool - broadcasted to everyone
-Leader proposes new block
-Followers and candidates verify new block and respond to leader with vote
-(Weigh votes, so nodes with tx in block are more weighted - stake)
-Leader needs 2/3 of votes before broadcasting the new block
-Each message/block from leader contains a term, if leader receives a message/block with higher term it becomes a follower instead. If fork, the side with the leader that holds the highest term will also hold the valid blockchain, the side of the fork with the invalid blockchain will switch, sending all transactions not accounted for back to the mempool
-
-Validate TX by checking signature on smart contract or smart contract exists, sequence number, valid coins
-
-\section{Smart Contracts}
-%Turing complete
+\item \textbf{Transport}: A transport is a method that represents the actual connection between the two endpoints in a protocol, e.g. a TCP connection. The transport is used for communication between the two endpoints, as it writes data from one connection to the other.
+\end{itemize}

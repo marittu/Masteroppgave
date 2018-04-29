@@ -1,6 +1,9 @@
 \chapter{Background and Related Work}
+This chapter contains background theory on blockchains and microgrids. Related work on the subject is presented at the end of the chapter
 %REMEMBER FIGURES AND TABLES!!
 \section{Microgrids}
+Microgrids or smartgrids
+
 %As the length of power lines is the main source of energy loss, microgrids technology is focused on local use of renewable sources, as a result there is no need to transport energy over long distances that reduces losses \cite{Microgrid_konashevych}
 
 % is hypothesized that the blockchain technology is the most effective solution for the task of automated (smart) management of interaction within such microgrids, because the blockchain itself was designed to the distributed cooperation of the large quantity of users in a decentralized manner. As a result, there is no need to maintain centralized authorities/corporations or any other relevant intermediaries to manage such grids \cite{Microgrid_konashevych}
@@ -13,7 +16,7 @@
 A blockchain is a decentralized database, distributed over a network of nodes. Transactions in the network are stored in blocks which are linked together as a chain, creating the blockchain. It was first introduced by Satoshi Nakamoto with the Bitcoin application \cite{Nakamoto_bitcoin}.
 In the following sections of this chapter, some key features about blockchains, the technology behind blockchains and, their usage will be analyzed and discussed. 
 
-\subsection{The Blockchain Basics}
+\subsection{The Blockchain Basics} \label{blockchain_basics}
 The blockchain is primarely used to transfer assets between users. In contrast to previous transaction methods, there is no need for trust between the participants of the transaction, nor the need of a trusted third-party institution, like a bank or government. The trust lies in the system as a whole, and the mathematical functions behind it, and not the individual participants \cite{Nofer}. Due to the decentralization of the network, there is no single-point-of-failure, as the database is duplicated in every node of the network. If a new user enters the network, or if they have been offline for a while, they can obtain the most recent version of the blockchain by querying the network multiple times, until they are convinced they have the correct version. %cite needed
 
 The below description of a blockchain is based on the Bitcoin blockchain. Many of these features hold true for most blockchains. However, there are many variations of blockchain implementations, due to public/private configurations, consensus models etc. These differences will be described later in the chapter.
@@ -109,33 +112,7 @@ Little or no chance of 51\% attacks
 \subsubsection*{Summary}
 In conclusion, the type of blockchain most beneficial for each applications will vary from industry to industry and from application to application. Public blockchains are most beneficial for individual users, as there is no need to trust anyone. Private and consortium blockchains are more beneficial to organizations or companies, as they lower cost and increase speed of transactions.
 
-
-\section{Merkel Tree}
-A merkel tree is a (binary) tree where all the leaf nodes are paired and hashed until a single root hash remains, which is the merkel root. Each transaction is appended to the merkel tree as a leaf node. The merkel root is stored in the header of a block in the blockchain.   
-
-SPACE SAVING
-Also used by private blockchains to ensure only valid transactions are added to the blockchain
-%Figure
-
-%\cite{Thompson_private} 
-Common in peer-to-peer systems including blockchains. Authenticate receiving data as part of file (etc.), verify transaction (that has happened previously). No need to store entire history - saves space and time. Merkel data created out of transaction data in each block. Enables auditing transactions in logarithmic time opposed to linear time.   
-
-%\cite{Clifton_merkle Provides digital signature for authentication of message. Provides consistency verification, data verification and data synchronization 
-%Significantly reduces the amount of data that a trusted authority has to maintain to proof the integrity of the data.
-%Significantly reduces the network I/O packet size to perform consistency and data verification as well as data synchronization.
-%Separates the validation of the data from the data itself -- the Merkle tree can reside locally, or on a trusted authority, or can itself reside on a distributed system (perhaps you only maintain your own tree.)  Decoupling the "I can prove the data is valid" from the data itself means you can implement the appropriate and separate (including redundant) persistence for both the Merkle tree and the data store.
-%Merkle trees provide a means of proving that integrity / validity of your data.
-%Merkle trees require little memory / disk space and proofs are computationally easy and fast.
-%Merkle tree proofs and management requires only a very small and terse amount of information to be transmitted across a network.
-%Used where trees that are append only and not updated 
-
-%\cite{log_proofs} 
-A Merkle consistency proof lets you verify that any two versions of a log are consistent: that is, the later version includes everything in the earlier version, in the same order, and all new entries come after the entries in the older version. If you can prove that a log is consistent it means that no certificates have been back-dated and inserted into the log, no certificates have been modified in the log, and the log has never been branched or forked.
-
-A Merkle audit proof lets you verify that a specific certificate has been included in a log. This is a critical verification task because the Certificate Transparency model demands that all TLS clients reject any certificates that do not show up in a certificate log.
-
-\section{Consensus Models}
-Byzantine Fault Tolerance
+\section{Consensus Models} 
 Consensus models are important in distributed systems, in order for ... correct version of the shared ledger. 
 %\cite{Zheng_overview}
 %Table to summerize this section
@@ -180,9 +157,6 @@ no coin creation (mining) exists in proof of stake. Instead, all the coins exist
 
 %\cite{pos_weak} flaws in proof of stake
 
-\subsection{Proof of Elapsed Time}
-
-
 \subsection{Raft}
 Raft is a partially asynchronous, leader based consensus algorithm for managing replicated logs across the system. 
 
@@ -206,12 +180,15 @@ Terms
 Remote procedure calls (RPC)
 %http://www.scs.stanford.edu/14au-cs244b/labs/projects/copeland_zhong.pdf bft raft
 
-
+%
+%Immediate consensus instead of eventual consensus, no possibility of forks Raft - can handle fail-stop not Byzantine fails
 %Not BFT
 %No problems with forking, as raft requires majority consensus before making a new block 
 
 
+In Bitcoin, transactions are never finalized, in the sense that they can become part of a fork. As time passes and more blocks are created, a transactions is less likely to be part of a fork. In Raft however, transactions are finalized when the block becomes part of the blockchain. Due to the leader configuration and validation prior to the blockchain, forks do not occur. 
 
+Raft assumes trusted members, thus no Byzantine faulty nodes. 
 
 
 
@@ -231,6 +208,8 @@ Ripple requires each node to have a list of trusted nodes, each nodes list must 
  
  %http://docs.neo.org/en-us/node/whitepaper.html
  %http://sammantics.com/blog/2016/7/27/chain-1
+
+\subsection{Practical Byzantine Fault Tolerance} 
  
  \subsection{Summery of Consensus Models}
 This is perhaps the most challenging aspect in order to create a blockchain. Different types of blockchains require different types of consensus models.  
@@ -247,62 +226,84 @@ At this point, there does not exist a single best consensus model. Limitations a
 
 %\cite{Chakravarty_guide} : Public Blockchain, which ensures anonymity in identity but transparency in transactions. However, maintaining both anonymity and transactional transparency comes at a cost — it lowers the bandwidth between nodes and the entire blockchain must be duplicated by all nodes locally to be aware of the current state of the chain. 
 
-%\cite{Zheng_overview} :  blockchain cannot guarantee the transactional privacy since the values of all transactions and balances for each public key are publicly visible. Besides, the recent study [41] has shown that a user’s Bitcoin transactions can be linked to reveal user’s information. Moreover, Biryukov et al. [11] presented a method to link user pseudonyms to IP addresses even when users are behind Network Address Translation (NAT) or firewall. Selfish mining and stubborn mining
-
-%https://arxiv.org/pdf/1703.03779.pdf ponzi on ethereum
-\section{Blockchain Applications}
-%Dash?
-%Hyperledger
-\subsection{Bitcoin}
-Black market because of openness when everyone can read and write transactions
 Centralized the mining to countries with cheap electricity - vulnerable to changes in policy on electricity subsidies %\cite{hbr_safe}
 
-On average 10 minutes per block to avoid double spending, adjust difficulty to keep this pace. Fully verification takes about 1-2 hours due to possibility of forks - possibility of \enquote{double spending}
-Wallets
-One block contains 1 MB worth of transaction data
-
-We define an electronic coin as a chain of digital signatures. 
-
-Speed of transfer
-TCP/IP email analogy
-Transaction chain - history of ownership and blockchain - transaction ordering
 
 %\cite{economist_chain}: cap the size of a block at one megabyte, or about 1,400 transactions, it can handle only around seven transactions per second, compared to the 1,736 a second Visa handles in America. Blocks could be made bigger; but bigger blocks would take longer to propagate through the network, worsening the risks of forking
 
 %\cite{Zheng_overview} : due to the original restriction of block size and the time interval used to generate a new block, the Bitcoin blockchain can only process nearly 7 transactions per second, which cannot fulfill the requirement of processing millions of transactions in real-time fashion. Meanwhile, as the capacity of blocks is very small, many small transactions might be delayed since miners prefer those transactions with high transaction fee
 
-\subsection{Ethereum}
-%Smart Contracts - establishes rules between peers 
-Blocks can contain code which becomes a smart contract
-%\cite{economist_chain} : Ethereum’s distributed ledger can deal with more data than bitcoin’s can. And it comes with a programming language that allows users to write more sophisticated smart contracts, thus creating invoices that pay themselves when a shipment arrives or share certificates which automatically send their owners dividends if profits reach a certain level
-%https://www.ethereum.org/
-New blocks every 15 seconds
-Build apps on ethereum or access and interact with smart contracts 
-Currently uses PoW but plan in changing to PoS
-%"Ethereum would never be possible without bitcoin—both the technology and the currency—and we see ourselves not as a competing currency but as complementary within the digital ecosystem. Ether is to be treated as "crypto-fuel", a token whose purpose is to pay for computation, and is not intended to be used as or considered a currency, asset, share or anything else."
-Turing-complete programming language for smart contracts
-%https://github.com/ethereum/wiki/wiki/White-Paper#a-next-generation-smart-contract-and-decentralized-application-platform
+%\cite{Zheng_overview} :  blockchain cannot guarantee the transactional privacy since the values of all transactions and balances for each public key are publicly visible. Besides, the recent study [41] has shown that a user’s Bitcoin transactions can be linked to reveal user’s information. Moreover, Biryukov et al. [11] presented a method to link user pseudonyms to IP addresses even when users are behind Network Address Translation (NAT) or firewall. Selfish mining and stubborn mining
 
-Three types of applications on Ethereum platform; financial, semi-financial and non-financial. 
-\subsection{Tendermint}
-\subsubsection*{Smart Contracts}
-Turing complete
-Problem that they might not be hack safe 
+%https://arxiv.org/pdf/1703.03779.pdf ponzi on ethereum
+\section{Blockchains and Their Applications}
+Numerous blockchains have been created since the Bitcoin blockchain was published. Many blockchains, like Bitcoin, are based around crypto-currency. However, there are several blockchain with other purposes than being purely a crypto-currency, such as Ethereum. Some of these blockchains will be discussed in this section.
+
+\subsection{Bitcoin}
+How Bitcoin works, was roughly described in section \ref{blockchain_basics}. This section will discuss what Bitcoin is used for and in what applications it is beneficial for. Bitcoin is first and foremost a crypto-currency blockchain, so the applications are financial.
+
+The Silk Road drug market \cite{silk}, albeit illegal, is perhaps the field where Bitcoin provided the most convenience for its users, before it was shut down by the FBI in 2013. By using Bitcoins as payment, the marketplace ensured anonymous drug trading. In its 2.5 years of operation, the dark web market had sales worth over \$ 1 billion \cite{Ethereum_visions}.
+
+Another major advantages of Bitcoin is transferring money abroad \cite{wirex}. Compared to traditional transfers between banks which are both costly (on average 7.45\% \cite{world_bank_group}) and might take up to several days , Bitcoin has no extra transaction fees and new transactions are processed in minutes or hours, depending on the network traffic \cite{transfer_time}. 
+
+An example of an application built on top of the Bitcoin blockchain is Lighthouse \cite{lighthouse}. Lighthouse is a crowdfunding application where users can make donations in Bitcoin to projects. 
+
+\subsection{Ethereum and Smart Contracts}
+Ethereum is an open-source blockchain application platform \cite{ethereum.org} proposed by co-founder Vialik Buterin \cite{Buterin} in 2013 in his white paper \cite{ether_white_paper}. The decentralized platform runs smart contracts, which are unstoppable application transactions.  
+
+A smart contract is code enabling self-enforcing applications, through a pre-defined set of rules in the code. The smart contract code is stored in blocks which in turn become part of the blockchain. The smart contracts are used to establish rules between peers. A new programming language, solidity \cite{ethereum_docs}, was developed for creating smart contracts.
+
+Inspired by Bitcoin, Buterin came up with a platform to expand the limited financial use cases available in the Bitcoin blockchain. Ethereum is a programable blockchain. Protocols run on the Ethereum Virtual Machin (EVM) \cite{ethereum_docs}. Applications are created by users in the Turing complete programming language, solidity, and executed on the EVM. When an operation is executed on an EVM, it is simultaneously executed on all nodes in the network.
+
+Applications on Ethereum can either be financial, non-financial or semi-financial. Like Bitcoin, Ethereum also has a native crypto currency, ether. However, unlike Bitcoin, the ether has a purpose other than simply being a crypto currency. In order to run applications on the Ethereum blockchain, a small fee, or gasprice, is required. This is to ensure efficient and economical code, as each computational step in the code requires a certain amount of gas \cite{ether_white_paper}.
+
+Whereas Bitcoin only allows users to interact with the blockchain through a set of pre-defined operations, Ethereum allows users to create operations with arbitrary complexity.
+
+Several decentralized applications has been created on top of the Ethereum blockchain. Among these is the Brooklyn Microgrid, which will be further discussed in section \ref{Brooklyn}. Other applications include Decentralized News Network \cite{DNN}, where factual news reports are rewarded with tokens and free of censorship; uport \cite{uport}, an identity system for the decentralized web where users can store their identity and credentials on the Ethereum blockchain.
 
 \subsection{Hyperledger}
-Hyperleger is an open-source platform for blockchains hosted by the Linux Foundation. It consists of many project, two of which will be further evaluated here. Fabric and Sawtooth. 
-Consortium with identities verified and registered
-Linux foundation
-Permissioned blockchain
-Smart contracts
-Two consensus models - PBFT and SIEVE
-Not a cryptocurrency 
-%Sawtooth, Fabric, Iroha, Burrow
+Hyperledger consists of over 100 members, including companies such as IBM, Intel, Samsung, J.P. Morgan, American Express and Airbus \cite{hyperledger}. It is an open-source platform for blockchains hosted by the Linux Foundation. It consists of multiple blockchains, including Hyperledger Fabric from IBM and Hyperledger Sawtooth from Intel. 
+
+The Hyperledger blockchains differ from each other, but all have in common that they do not have any crypto currency. The Linux foundation focuses on open industrial blockchain development:
+
+\enquote{\textit{Hyperledger is an open source collaborative effort created to advance cross-industry blockchain technologies. It is a global collaboration, hosted by The Linux Foundation, including leaders in finance, banking, Internet of Things, supply chains, manufacturing and Technology.}} \cite{hyperledger}
+
+The Fabric blockchain is a base for developing blockchain with modular architecture \cite{fabric}, and aims to be a plug-and-play solution for various applications. Through the smart contract system in chaincode, the application logic is determined. 
+
+As of yet, the Hyperledger projects are still fairly new and mostly limited to Proor-of-Concept (PoC) testing \cite{industries}. The finance sector is one of the industries where the Hyperledger is in the PoC stage. Some of the benefits of using a distributed ledger technology in the financial industry includes:
+\enquote{\textit{streamlined settlement, improved liquidity, supply chain optimization, increased transparency, and new products/markets}}
+
+Following is a list of PoC projects that have been developed within the finance sector using Hyperledger technology:
+
+\begin{itemize}
+\item Bank-to-Bank transfers \cite{bank}
+\item eVoting \cite{evoting}
+\item Peer-to-peer energy trading \cite{nadgrid}
+\item Cross-border trade operations \cite{border}
+\end{itemize}
 
 
-%\subsection{Commercial Blockchains}%Not descriptive enough
-%IBM
-%Azur
+\subsection{Comparison of Commercial Blockchains}
+Table \ref{tab:commercial_comprison} summarizes the key features of the previously discussed blockchains: 
+\begin{center}
+\captionof{table}{Comparison between blockchains \cite{Nakamoto_bitcoin,ethereum_docs,hyperledger}}
+\begin{tabular}{ l|l|l|l}
+	 
+	\label{tab:commercial_comprison}
+   Blockchain  & \textbf{Bitcoin} & \textbf{Ethereum} & \textbf{Hyperledger} \\
+    & & & \textbf{Fabric} \\ 
+   \hline
+   Founded & 2009 & 2015 & 2017 \\
+   Crypto currency & Bitcoin & Ether & Non \\
+   Consensus & PoW & PoW, PoS & PBFT \\
+   Permissioned & Permissionless & Permissionless & Permissioned \\
+   Public access & Public & Public and Private & Private \\
+   Smart contracts & Non & Smart Contracts & Chaincode \\
+   Language & C++ & Go, C++, Python & Go, Java \\
+
+\end{tabular}
+\end{center}
+
 
 \section{Related work}
 There already exist some examples of blockchains being used in the energy market.  
@@ -317,12 +318,12 @@ There already exist some examples of blockchains being used in the energy market
 \cite{NRGcoin_Mihaylov} : Current trading of renewable energy without blockchain – pay ahead. NRGcoins directly correlating to energy transferred to grid – pay for use Calculations for buying and selling energy. First to propose this kind of system?
 
 
-https://solarcoin.org/en/frequently-asked-questions
-Interbit BTL
-Austria’s largest utility, Wien Energie, is one example. In February the company, which serves more than two million customers, signed up to a trial run by Canadian blockchain specialist BTL testing blockchain as an enabler of large-scale, cross-border energy trading %https://www.power-technology.com/features/blockchain-natural-partner-21st-century-power-grids/
-Innogy
+%https://solarcoin.org/en/frequently-asked-questions
+%Interbit BTL
+%Austria’s largest utility, Wien Energie, is one example. In February the company, which serves more than two million customers, signed up to a trial run by Canadian blockchain specialist BTL testing blockchain as an enabler of large-scale, cross-border energy trading %https://www.power-technology.com/features/blockchain-natural-partner-21st-century-power-grids/
+%Innogy
 
-\subsection{Brooklyn Microgrid}
+\subsection{Brooklyn Microgrid} \label{Brooklyn}
 % in a blockchain microgrid project in Brooklyn, N.Y., each participant trading electricity had to invest in a computer with a blockchain “node” in order for their homes with solar panels to be able to sell power to neighbors. The blockchain network manages and records the transactions with little human interaction. The “nodes” in the computers are needed to validate and share the information to minimize the possibility of downtime or interference with the data. The more data that needs to be bundled into “blocks” and passed along, the more computing power they need. \cite{hbr_grid}
 
 Virtual/physical grid %: A distinctive difference exists between a physical microgrid, which consists of an actual power distribution microgrid, and a virtual microgrid, which simply links the microgrid participants over an information system. Contrary to a physical microgrid, virtual microgrids cannot physically decouple from the superordinate grid \cite{Brooklyn_Mengelkamp}

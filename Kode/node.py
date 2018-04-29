@@ -36,7 +36,7 @@ class Node(PeerManager):
         self.config_log = config_log 
         
         self.i = 0
-        self.validator = Validator(self.nodeid, self.reactor, self.connections, self.config_log, self.proposed_block_log, hostport)
+        self.validator = Validator(self.nodeid, self.reactor, self.connections, self.blockchain_log, self.proposed_block_log, hostport)
         self.get_head_block_and_index() #TODO; MAKE OWN FUNCTION ONLY RUNNING AT INIT
         self.validator.commit_index = self.blockchain_log.last_index()
         LoopingCall(self.state_machine).start(4) 
@@ -62,6 +62,7 @@ class Node(PeerManager):
                 self.i = 0
             self.validator.append_entries(propose_block)
             if propose_block is not None:
+                #MAKE PROPOSE BLOCK(?) METHOD
                 self.validator.last_log_index += 1
                 self.validator.last_log_term = self.validator.current_term
                 self.validator.proposed_block_log.write(self.validator.current_term, self.validator.last_log_index, propose_block)
@@ -76,6 +77,7 @@ class Node(PeerManager):
         
         if self.validator.state == FOLLOWER:
             if self.validator.propose_block is not None:
+                #MAEK VALIDATE BLOCK AND ADD BLOCK METHOD
                 print("PROPOSE BLOCK")
                 print(self.validator.propose_block.index)
                 self.get_head_block_and_index()
@@ -83,16 +85,14 @@ class Node(PeerManager):
                 print(self.head_block.index)
                 print("VALIDATION", self.validator.propose_block.validate_block(self.head_block))
                 if self.validator.propose_block.validate_block(self.head_block):
-                    self.validator.accepted_block = True
                     self.validator.last_log_index += 1
                     self.validator.last_log_term = self.validator.block_term
                     self.validator.proposed_block_log.write(self.validator.block_term, self.validator.last_log_index , self.validator.propose_block)
                 else:
-                    self.validator.accepted_block = False
                     if self.validator.propose_block.index == self.validator.last_log_index + 1:
                         self.validator.proposed_block_log.update_index()
                     
-
+        #MAKE ADD BLOCK TO BLOCKCHAIN METHOD
         if self.validator.commit_index > self.blockchain_log.last_index():
             index = self.blockchain_log.last_index() + 1
             while index <= self.validator.commit_index:
@@ -122,8 +122,8 @@ class Node(PeerManager):
             print("except in get block and index")
             self.write_genesis()
     
-    def get_vote(self):
-        line = self.validator.proposed_block_log.read().split(',')
+    #def get_vote(self):
+    #    line = self.validator.proposed_block_log.read().split(',')
         #self.validator.voted_for = line[2]
 
     def write_genesis(self):
@@ -181,95 +181,3 @@ class Node(PeerManager):
         Helper function for updating of connected nodes in validator
         """
         Validator.new_connection(self.validator, conn)
-
-
-
-
-
-
-    def receive_block(self, msg):
-        """
-        Validate block and add to chain
-        """
-        block = msg['data']
-        block.print_block()
-        if block.validate_block(self.head_block):
-            self.blockchain.add_block(block)
-            self.head_block = block #Move when add_block is moved
-        else:
-            #Temporary until consensus
-            self.req_head_block()
-            #raise ValueError('Block Invalid')
-        
-        #TODO: combine with chain_req. If head_block is same return (y), else see if block in chain and return (a given amount of) blocks in chain  
-    def receive_head_block_req(self, conn, msg):
-        """
-        Message from other peer requesting head block
-        """
-        headblock = msg['headblock']
-        if self.blockchain.head_block_in_chain(headblock):
-            msg = {
-                'msgtype': 'head_block', 
-                'data': self.head_block
-            }
-            messages.send_to_conn(msg, conn)
-        else:
-            print("Wrong chain") #TODO handle
-
-    def receive_head_block(self, msg, conn):
-        """
-        Comparing received head block and request blockchain if not the same
-        """
-        block = msg['data']
-
-        #Expand to have at least same as three nodes, counter? 
-        if self.head_block.assert_equal(block):
-            pass
-
-        else:
-            msg = {'msgtype':'req_blockchain'}
-            messages.send_to_conn(msg, conn)
-
-    def receive_chain_req(self, conn):
-        """
-        Send blockchain to peer requesting it
-        """
-
-        msg = {
-            'msgtype': 'blockchain', 
-            'data': self.blockchain
-        }
-        messages.send_to_conn(msg, conn)
-
-    def receive_chain(self, msg):
-        """
-        Update blockchain and set new head block
-        """
-        self.blockchain = msg['data']
-        self.blockchain.print_chain()
-
-        if self.blockchain.validate_blockchain():
-            self.head_block = self.blockchain.get_head_block()
-            #See if another node has a more recent block
-            self.req_head_block()
-        else:
-            raise ValueError('Blockchain Invalid')
-
-    def broadcast_block(self):
-        """
-        Broadcast proposal block with random transactions at random interval
-        """
-        block = Block(random.randint(1,100))
-        block.propose_block(self.head_block)
-        msg = {
-            'msgtype': 'block', 
-            'data': block
-        }
-        messages.broadcast(msg, self.connections)
-        
-    def req_head_block(self,):
-        msg = {
-            'msgtype': 'req_head_block', 
-            'headblock': self.head_block
-        }
-        messages.send_to_peer(msg, self.connections, self.own_connection)

@@ -1,30 +1,114 @@
-\chapter{Functional Specifications}
+\chapter{Functional Specifications} 
+This chapter describes the functional specifications of a system for settlement in a microgrid. The specifications are divided into three categories: application from the user's perspective; application from computer's perspective; and the blockchain.
 
-\section{Blockchain Specifications}
-This chapter contains the specifications for the system to be implemented. 
+Each node consists of a smart meter for registering consumption and production of electricity. The smart meter is connected to the node's computer. The computer receives data from the smart meter and processes the data before passing it on to the blockchain, which also runs on the computer. Nodes are uniquely identified by their id.  
 
-The blockchain will be permissioned, with a central authority, e.g. the project owner, validating which nodes are allowed to join the network. The blockchain will not be completely private, but rather a consortium where all the nodes allowed access to the network are participating in the validation of new blocks. To avoid malicious nodes, or other unwanted participants in the network, the project owner also handles the distribution of private and public keys used for signing transactions. By having a central authority control key distribution, it is possible to keep a record of user identities corresponding to the keys. 
+\section{Application From User Perspective}
+\begin{itemize}
+\item Users connect to existing nodes on the Network, given an IP address and a port number. The user also chooses a port to run the application on. 
+\item The user can buy tokens that are later used as payment for consumed electricity. The price of a token is directly related to NOK.
+\item Tokens can be exchanged back to NOK at any time.
+\item A website lets users set up smart contracts and monitor production and consumption of electricity. %AWS? or node?
+\item The website requires a log in where users are identified by their node id. 
+\item Prosumers with surplus electricity to sell, put up their availability on the website.
+\item Consumers who want to purchase electricity can query available producers and initiate a smart contract.
+\item When the contract is in place and energy is transferred, the production and consumption can be monitored on the website.
+\end{itemize}
 
-(An alternative approach for accepting new nodes in to the network, is to make it part of the consensus model. For instance, say the network is started by an initial group of nodes. If a new node is to be introduced into the network, M of N nodes must validate the node before it can enter the network. This could work in a system such as a microgrid, where participants are physically close, possibly acquaintances in real life, and the system is finite. Key distribution would then be handled differently e.g. by a key generating function. This potentially provides higher user privacy, which might not be ideal in such a system.)
+%Tilkoling av målinger - 
+%alt som går inn og ut - hva og hensikt - er det funksjonelle 
+%Funksjonell for maskiner - inn/ut meldninger 
+%funskjonell mellom ytre skall og blockchain
+%Blockchain - functional hva forventes ut med gitt input
+%se bort fra mengde/pris
 
-Each new block will contain all (or 8) pending transactions. The transactions will be stored in a merkel tree, to save space in the block header. The merkel tree is also used to verify transactions, e.g. by ensuring that no tokens are used for double spending. %TODO
-Each block/transaction contains a timestamp to help prevent double spending of tokens or double selling of electricity(?)%TODO
+%USB for info om id, mengde siden forrige måling e.g. 1 min: energi og klokkeslett 
+%smart måler måler trekk/leveranse fra/til system
+\subsection{Use Case}
+\subsubsection*{Prosumer}
+A user who produces excess electricity can choose to sell this electricity to neighbors connected to the microgrid. The user connects to the network grid and is given an unique public/private key pair, which is the node id and a corresponding password. The user can log in to the website and advertise the available electricity to other users on the network. When queried by consumers about availability, the users can set up a smart contract. The user receives tokens from the consumer for the consumed electricity. The tokens can be converted into NOK at any time, or be used to purchase electricity from other prosumers on the grid. The user can log in to the website and monitor how much electricity they consume, and how much they produce to the grid, as well as the electricity price. 
+%Selge opp til en viss kapasitet
+%
+%Differansen batteri/generator
 
-The Raft consensus algorithm is used where the majority of the nodes must validate a block before it is commited. As previously mentioned, all nodes in the network participate in the consensus process of validating new blocks. This is to prevent centralization of the blockchain. Since the blockchain is not public, there is no reason to rely on cryptoeconomics for incentives to keep the blockchain correct. The users have already been approved, so there is little to no risk of an attack. This consensus algorithm requires far less computing power than PoW (and PoS?) and can also be implemented to perform much faster transactions. %Uryddig No possibility of forks, as consensus is reached before commit
+\subsubsection*{Consumer}
+Users wishing to purchase electricity from their neighbors can connect to the microgrid network. After logging in to the website with their given node id and password, they can query other users for available electricity. The consumer can set up a smart contract with a prosumer, meaning that the user cannot purchase electricity from other prosumers during the duration of the contract. However, the user can choose not to consume electricity from the grid by e.g. using less energy or getting electricity from another source, such as a battery or a generator. The user must purchase tokens which are used as payment for consumed electricity of the grid. Consumers can at any time log in to the website and monitor how much electricity they consume at minute intervals, and at what price.
+
+\section{Application From Computer Perspective}
+\begin{itemize}
+\item The computer is connected to a smart meter and receives information about a node's consumption and production of electricity at periodic intervals. 
+\item The machine passes the readings on to the blockchain node. 
+\item When two users initiate a smart contract, the machine passes it on to the blockchain for validation and storage.
+\item New readings from the smart meter are processed on the website and added to the graphs for consumption and production.
+\end{itemize}
+
+\subsection{Use Case}
+\subsubsection*{New Meter Reading}
+Once, every minute, the computer receives measurement readings from the smart meter. The readings include the node id of the smart meter, and amount of electricity produced and consumed since the last reading. The information is then passed on to the node's blockchain for further processing. The reading is also passed to the monitoring display.
+
+\subsubsection*{Monitoring Consumption and Production}
+When new measurements are received from the smart meter, the computer updates the graph on the website to include the new measurements. A super user can view graphs for all nodes in the network. Individual nodes can only see their own graph, by logging in with the node id.
 
 
-\section{Application Interface Specification}
-The current electricity price is visible to the consumers/prosumers at all times, and is updated every minute. Payment for consumed electricity will be handled by consumers making deposits into an account. Deposits will be made with actual currency (e.g. USD or NOK) and be converted into tokens (not to be confused with cryptocurrency), where the token value directly correlates to value of the currency with minute resolution. The tokens can at any point be withdrawn from the account. Tokens are transferred from consumer to producer when electricity is bought by consumer. Some central agency(?) needs to handle the distribution and conversion of tokens to/from actual currency
+\section{Blockchain}
+\begin{itemize}
+\item The blockchain receives two types of input from the application, a smart contract between two users and electricity transactions.
+\item The blockchain is distributed between all the nodes in the network. 
+\item The nodes broadcast their individual transactions across the network.
+\item The leader of the blockchain proposes a new block at minute intervals, containing all new electricity transactions from that period of time.
+\item The proposed block is broadcasted to all network nodes, who validate the block and the transactions.
+\item If a majority of the nodes deem the block valid, it is stored in the blockchain.
+%\item Passing anything back to the application?
+\end{itemize}
 
-A consumer signs a contract with a producer/prosumer for a given amount of time, e.g. a month. The consumer can at any time decide how much electricity they want to buy, or if the want to buy anything at all. Fluctuations in price will likely influence this decision. Once a consumer signs a contract from one producer/prosumer, it cannot sign a new contract with someone else. However, it can opt out of using the electricity for a period by e.g. using a battery, or simply using less energy for a period of time, if it is expensive. This might help regulate pricing if it becomes too high due to high demands. 
+%Send tx info back to API for consumption monitoring?
 
-To ensure precise transactions of tokens/electricity, smart contract functionality is used. A consumer puts tokens into a contract with limitations on how much electricity they want to buy and at which prize. If current electricity price matches the limitations, the computing node (virtual machine) automatically "forwards" the right amount of energy to the right node, and the tokens in return. The contract locks the tokens until electricity has been consumed. In case of a prosumers/producers failure to provide electricity, tokens are transferred back to consumer. This functionality prevents double spending of tokens and double selling of electricity.
+\subsection{Use Case}
 
-The contracts will be stored in the blockchain, and automatically executed when the right conditions are met. A token contains a state indicating whether it is locked in a smart contract or not. An important reason for using smart contract functionality is that there are two assets being transferred in this system: tokens and electricity. In a cryptocurrency blockchain with only one asset, the sender of the asset initiates the transaction. As a result of the bi-directional transfer of assets, the smart contract is used to ensure that neither side can withdraw from the transaction when it is in progress. 
+\subsubsection*{Smart Contract}
+When two users decide to initiate a smart contract, it is sent to the blockchain for validation. The users sign the contract with a digital signature - their private key. The signature can later be verified with the user's public key.
+When the smart contract is passed to the blockchain module, it is added to a block and verified by the nodes before the block is stored in the blockchain.
+ 
+\subsubsection*{Electricity Transactions}
+New electricity transactions from all network nodes are passed to the blockchain layer every minute. New transactions from each node are broadcasted throughout the network. The current leader adds all new transactions to a block, which is validated by the nodes before it is stored in the blockchain. 
 
-The implementation of this system is focused around the software; the hardware is out of scope. The actual transfer of energy, including transmission lines; utility readings; and other hardware, is not part of the scope either. It is assumed that one or more computers exist that can monitor the microgrid and the energy flow to and from a node, as well as running a virtual machine for validation of blocks, creation and execution of smart contracts, and running and monitoring the blockchain. For the purpose of this project, these features will be simulated.
 
-Each node in the system consists of a server and several clients connected to the servers. Since the microgrid will only have a finite number of participants, all nodes are connected to each other. Messages are either broadcasted or sent to specific nodes in the system. The types of messages in the system includes, but are not limited to, initial discovery of new nodes; initial synchronization of the blockchain; broadcasting new transaction; proposing new blocks; consensus voting on new blocks; 
+%Vet ikke hvem du får strøm av 
+\newpage
+
+%\section{Technical Specifications}
+
+%The implementation of this system is focused around the software; the hardware is out of scope. The actual transfer of energy, including transmission lines; utility readings; and other hardware, is not part of the scope either. It is assumed that one or more computers exist that can monitor the microgrid and the energy flow to and from a node, as well as running a virtual machine for validation of blocks, creation and execution of smart contracts, and running and monitoring the blockchain. For the purpose of this project, these features will be simulated.
+
+%Each node in the system consists of a server and several clients connected to the servers. Since the microgrid will only have a finite number of participants, all nodes are connected to each other. Messages are either broadcasted or sent to specific nodes in the system. 
+%The types of messages in the system includes, but are not limited to, initial discovery of new nodes; initial synchronization of the blockchain; broadcasting new transaction; proposing new blocks; consensus voting on new blocks; 
+
+%Following are the technical specifications of the system.
+
+
+%This chapter contains the specifications for the system to be implemented. 
+%\subsection{Blockchain Specification}
+%The blockchain will be permissioned, where nodes connect to network by obtaining information from other nodes already on the network. The blockchain will not be completely private, but rather a consortium where all the nodes allowed access to the network are participating in the validation of new blocks. 
+
+%(An alternative approach for accepting new nodes in to the network, is to make it part of the consensus model. For instance, say the network is started by an initial group of nodes. If a new node is to be introduced into the network, M of N nodes must validate the node before it can enter the network. This could work in a system such as a microgrid, where participants are physically close, possibly acquaintances in real life, and the system is finite. Key distribution would then be handled differently e.g. by a key generating function. This potentially provides higher user privacy, which might not be ideal in such a system.)
+
+%Blocks are created every minute, and will contain all in-going and out-going electricity for the past block interval. Blocks may also contain smart contracts entered by two users in the network. Blocks must be approved by the network majority before they are added to the blockchain.
+%Each block/transaction contains a timestamp to help prevent double spending of tokens or double selling of electricity(?)%TODO
+
+%The Raft consensus algorithm is used where the majority of the nodes must validate a block before it is commited. As previously mentioned, all nodes in the network participate in the consensus process of validating new blocks. This is to prevent centralization of the blockchain. Since the blockchain is not public, there is no reason to rely on cryptoeconomics for incentives to keep the blockchain correct. The users have already been approved, so there is little to no risk of an attack. This consensus algorithm requires far less computing power than PoW (and PoS?) and can also be implemented to perform much faster transactions. %Uryddig No possibility of forks, as consensus is reached before commit
+
+%\subsection{Smart Contract Specification}
+%A consumer signs a contract with a producer/prosumer for a given amount of time, e.g. a month. The consumer can at any time decide how much electricity they want to buy, or if the want to buy anything at all. Fluctuations in price will likely influence this decision. Once a consumer signs a contract from one producer/prosumer, it cannot sign a new contract with someone else. However, it can opt out of using the electricity for a period by e.g. using a battery, or simply using less energy for a period of time, if it is expensive. This might help regulate pricing if it becomes too high due to high demands. 
+
+%To ensure precise transactions of tokens/electricity, smart contract functionality is used. A consumer puts tokens into a contract with limitations on how much electricity they want to buy and at which prize. If current electricity price matches the limitations, the computing node (virtual machine) automatically "forwards" the right amount of energy to the right node, and the tokens in return. The contract locks the tokens until electricity has been consumed. In case of a prosumers/producers failure to provide electricity, tokens are transferred back to consumer. This functionality prevents double spending of tokens and double selling of electricity.
+
+%The contracts will be stored in the blockchain, and automatically executed when the right conditions are met. A token contains a state indicating whether it is locked in a smart contract or not. An important reason for using smart contract functionality is that there are two assets being transferred in this system: tokens and electricity. In a cryptocurrency blockchain with only one asset, the sender of the asset initiates the transaction. As a result of the bi-directional transfer of assets, the smart contract is used to ensure that neither side can withdraw from the transaction when it is in progress. 
+
+%\section{Application Interface Specification}
+%The current electricity price is visible to the consumers/prosumers at all times, and is updated every minute. Payment for consumed electricity will be handled by consumers making deposits into an account. Deposits will be made with actual currency (e.g. USD or NOK) and be converted into tokens (not to be confused with cryptocurrency), where the token value directly correlates to value of the currency with minute resolution. The tokens can at any point be withdrawn from the account. Tokens are transferred from consumer to producer when electricity is bought by consumer. Some central agency(?) needs to handle the distribution and conversion of tokens to/from actual currency
+
+%
+
 
 
 %Unlike bitcoin, there is no single asset that can be followed through out the blockchain. The asset of interest is electricity, which is not reusable. 
@@ -35,3 +119,6 @@ Each node in the system consists of a server and several clients connected to th
 
 %Possible to work in the state of a system/nodes somewhere?
 
+
+%TIL EPOST:
+%Resten av oppgaven blir nettside og smart kontrakter, simulerte transaksjoner. Legge disse i blockchain og validere. Nettside hvor hver node kan se sine produsert/konsumert strøm. Nettside for smart kontrakter. Rekker sannsynligvis ikke implementasjon av tokens.

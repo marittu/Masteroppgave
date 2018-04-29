@@ -15,7 +15,7 @@ TIMEOUT = 3 * PING_INTERVAL
 class Peer(IntNStringReceiver):
 	"""
 	Subclass of the protocol IntNStringReceiver.
-	Each received messages is a callback to the method 'stringReceived'
+	Each received message is a callback to the method 'stringReceived'
 	Keeps track of information in a connection between two peers
 	"""
 
@@ -43,7 +43,6 @@ class Peer(IntNStringReceiver):
 		
 		msg = pickle.loads(data)
 		msg_type = msg['msgtype']
-		#TODO: better handling of connections
 		if msg_type == 'hello':
 			self.handle_hello(msg)
 

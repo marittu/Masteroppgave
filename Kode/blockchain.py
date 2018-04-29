@@ -15,6 +15,11 @@ class Block():
         #    for arg in args:
         #        self.transactions.append(arg)
 
+    def add_transaction(self, transactions):
+        for tx in transactions:
+            if tx.validate_transaction():
+                self.transactions.append(tx)
+
 
     def get_hash(self):
         new_hash = str(self.index)+str(self.previous_hash)+str(self.timestamp)+str(self.transactions)
@@ -148,9 +153,10 @@ class Blockchain():
 
 class Transactions():
     def __init__(self):
-        self.sender = None
-        self.receiver = None
+        self.producer = None
+        self.consumer = None
         self.amount = None
+
 
 
 

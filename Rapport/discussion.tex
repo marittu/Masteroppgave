@@ -1,3 +1,14 @@
 \chapter{Discussion}
+Possible to add one more message type - ack propose block and commit several blocks to the blockchain at a time and at longer intervals
+Correctness
+Strong Consistency
+Efficiency - update log is very inefficient
+Store all peers since finite size of network?
+No protection against brute force attacks on network IP/port 
+\section{Conclusion}
 
-Necessary to store all transactions?
+\section{Future Work}
+Current implementation stores blockchain and other logs locally on machine, a future improvement could be to store the data in the cloud to save space. (Crashes, but not so relevant since data is duplicated across the network)
+
+To save space, blocks containing transactions that are settled or smart contracts that are no longer valid can be deleted. 
+
