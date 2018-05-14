@@ -1,70 +1,80 @@
 \chapter{Functional Specifications} 
 This chapter describes the functional specifications of a system for settlement in a microgrid. The specifications are divided into three categories: application from the user's perspective; application from computer's perspective; and the blockchain.
 
-Each node consists of a smart meter for registering consumption and production of electricity. The smart meter is connected to the node's computer. The computer receives data from the smart meter and processes the data before passing it on to the blockchain, which also runs on the computer. Nodes are uniquely identified by their id.  
+Each node consists of a smart meter for registering consumption and production of electricity. The smart meter is connected to the node's computer. The computer receives data from the smart meter and processes the data before passing it on to the blockchain, which also runs on the computer. Nodes are uniquely identified by their ID.  
 
-\section{Application From User Perspective}
+The system consists of the following participants:
+
 \begin{itemize}
+\item Consumers purchasing electricity.
+\item Prosumers who consume electricity, and sell excess electricity from their own production. Prosumers can also purchase electricity from others.
+\item Public producers delivering electricity on demand through generators, batteries, or power transmitting cables. 
+\end{itemize}
+
+Having power delivered by public producers is a costly solution, and should be avoided. Participants can be discouraged from this solution by setting extreme prices on electricity from these sources.
+
+\section{Application From User Perspective} \label{user}
+This section describes how the user interacts with the system.
+
+\begin{enumerate}
 \item Users connect to existing nodes on the Network, given an IP address and a port number. The user also chooses a port to run the application on. 
-\item The user can buy tokens that are later used as payment for consumed electricity. The price of a token is directly related to NOK.
-\item Tokens can be exchanged back to NOK at any time.
-\item A website lets users set up smart contracts and monitor production and consumption of electricity. %AWS? or node?
-\item The website requires a log in where users are identified by their node id. 
+\item A website lets users set up smart contracts and monitor production and consumption of electricity. 
+\item The website requires a login where users are identified by their node ID. 
 \item Prosumers with surplus electricity to sell, put up their availability on the website.
 \item Consumers who want to purchase electricity can query available producers and initiate a smart contract.
-\item When the contract is in place and energy is transferred, the production and consumption can be monitored on the website.
-\end{itemize}
+\item Users can monitor how much electricity they produce and consume in real-time.
+\end{enumerate}
 
 %Tilkoling av målinger - 
 %alt som går inn og ut - hva og hensikt - er det funksjonelle 
-%Funksjonell for maskiner - inn/ut meldninger 
-%funskjonell mellom ytre skall og blockchain
-%Blockchain - functional hva forventes ut med gitt input
-%se bort fra mengde/pris
 
-%USB for info om id, mengde siden forrige måling e.g. 1 min: energi og klokkeslett 
-%smart måler måler trekk/leveranse fra/til system
 \subsection{Use Case}
+Use cases for how prosumers and consumers interact with the system are described below.
 \subsubsection*{Prosumer}
-A user who produces excess electricity can choose to sell this electricity to neighbors connected to the microgrid. The user connects to the network grid and is given an unique public/private key pair, which is the node id and a corresponding password. The user can log in to the website and advertise the available electricity to other users on the network. When queried by consumers about availability, the users can set up a smart contract. The user receives tokens from the consumer for the consumed electricity. The tokens can be converted into NOK at any time, or be used to purchase electricity from other prosumers on the grid. The user can log in to the website and monitor how much electricity they consume, and how much they produce to the grid, as well as the electricity price. 
-%Selge opp til en viss kapasitet
-%
+A user who produces excess electricity can choose to sell this electricity to neighbors connected to the microgrid. The user connects to the network grid and is given a unique public/private key pair, which is the node ID and a corresponding password. The user can log in to the website and advertise the available electricity to other users on the network. When queried by consumers about availability, the users can set up a smart contract. The user can log in to the website and monitor how much electricity they consume, and how much they produce to the grid, as well as the electricity price. If a prosumer does not meet the requirements of a contract, he or she must pay a fee corresponding to the difference between the price the prosumer is selling at, and the price of available energy.
+
 %Differansen batteri/generator
 
 \subsubsection*{Consumer}
-Users wishing to purchase electricity from their neighbors can connect to the microgrid network. After logging in to the website with their given node id and password, they can query other users for available electricity. The consumer can set up a smart contract with a prosumer, meaning that the user cannot purchase electricity from other prosumers during the duration of the contract. However, the user can choose not to consume electricity from the grid by e.g. using less energy or getting electricity from another source, such as a battery or a generator. The user must purchase tokens which are used as payment for consumed electricity of the grid. Consumers can at any time log in to the website and monitor how much electricity they consume at minute intervals, and at what price.
+Users wishing to purchase electricity from their neighbors can connect to the microgrid network. After logging in to the website with their given node ID and password, they can query other users for available electricity. The consumer can set up a smart contract with a prosumer. Consumers can at any time log in to the website and monitor how much electricity they consume at minute intervals, and at what price. If the consumer decides to use less energy than what was specified in the contract, he or she must pay a fee corresponding to what the producer is losing in profit.
 
-\section{Application From Computer Perspective}
-\begin{itemize}
+
+\section{Application From Computer Perspective} \label{computer}
+This section describes how the computer handles incoming data from the users and connected smart meters, forwarding the data to the blockchain, and settling the transaction between users.
+\begin{enumerate}
 \item The computer is connected to a smart meter and receives information about a node's consumption and production of electricity at periodic intervals. 
-\item The machine passes the readings on to the blockchain node. 
+\item The machine passes the readings on to the blockchain for storage. 
 \item When two users initiate a smart contract, the machine passes it on to the blockchain for validation and storage.
 \item New readings from the smart meter are processed on the website and added to the graphs for consumption and production.
-\end{itemize}
+\item Settlement is done every time new readings occur. Based on valid contracts in the system and data from the readings, each node's bill is updated reflecting the latest transactions.
+\end{enumerate}
 
 \subsection{Use Case}
+Following are use cases for when the computer receives a new meter reading, how consumption and production of electricity are monitored, and how smart contracts are processed. 
 \subsubsection*{New Meter Reading}
-Once, every minute, the computer receives measurement readings from the smart meter. The readings include the node id of the smart meter, and amount of electricity produced and consumed since the last reading. The information is then passed on to the node's blockchain for further processing. The reading is also passed to the monitoring display.
+Once, every minute, the computer receives measurement readings from the smart meter. The readings include the node ID of the smart meter, and amount of electricity produced and consumed since the last reading. The information is then passed on to the node's blockchain for storage. The settlement module in the applications settles the new readings based on the valid contracts in the system. 
 
 \subsubsection*{Monitoring Consumption and Production}
-When new measurements are received from the smart meter, the computer updates the graph on the website to include the new measurements. A super user can view graphs for all nodes in the network. Individual nodes can only see their own graph, by logging in with the node id.
+When new measurements are received from the smart meter, the readings become available to the user through the monitoring display on the user interface. A super user can view graphs for all nodes in the network. Individual nodes can only see their own graph, by logging in with the node ID.
 
+\subsubsection*{New Contract}
+When two users initiate a contract through the user interface on the web site, it is passed to the blockchain for validation and storage. When new meter readings are registered, the system iterates through valid contracts to settle the new transactions
 
 \section{Blockchain}
-\begin{itemize}
-\item The blockchain receives two types of input from the application, a smart contract between two users and electricity transactions.
-\item The blockchain is distributed between all the nodes in the network. 
-\item The nodes broadcast their individual transactions across the network.
-\item The leader of the blockchain proposes a new block at minute intervals, containing all new electricity transactions from that period of time.
-\item The proposed block is broadcasted to all network nodes, who validate the block and the transactions.
-\item If a majority of the nodes deem the block valid, it is stored in the blockchain.
-%\item Passing anything back to the application?
-\end{itemize}
-
-%Send tx info back to API for consumption monitoring?
+The blockchain acts as the back-end service to support the requirements given in sections \ref{computer} and \ref{user}.
+\begin{enumerate}
+\item There are two types of blockchains in the system, one for storing electricity transactions and one for storing smart contracts.
+\item The application sends two types of input to the blockchains, a smart contract between two users and electricity transactions. They are stored in their respective blockchains.
+\item The blockchains are distributed between all the nodes in the network. 
+\item The nodes broadcast their individual transactions across the network, while new smart contracts are sent directly to the consensus leader.
+\item The leader of the blockchain proposes a new blocks when data is available.
+\item The proposed block is broadcasted to the consensus nodes, who validate the block and the transactions.
+\item If a majority of the nodes deem the block valid, it is broadcasted to the whole network and stored in the blockchain.
+\item When the application is settling new transactions, valid smart contracts in the blockchain are triggered and used in the settlement process. 
+\end{enumerate}
 
 \subsection{Use Case}
-
+How the blockchain handles smart contracts and electricity transactions are described in the use cases below.
 \subsubsection*{Smart Contract}
 When two users decide to initiate a smart contract, it is sent to the blockchain for validation. The users sign the contract with a digital signature - their private key. The signature can later be verified with the user's public key.
 When the smart contract is passed to the blockchain module, it is added to a block and verified by the nodes before the block is stored in the blockchain.
@@ -117,8 +127,3 @@ New electricity transactions from all network nodes are passed to the blockchain
 
 %Public/private cryptographic key that works as digital signatures in transactions. Also validates that electricity is sold/consumed by the right node. Public key also works as the address of that particular node.  
 
-%Possible to work in the state of a system/nodes somewhere?
-
-
-%TIL EPOST:
-%Resten av oppgaven blir nettside og smart kontrakter, simulerte transaksjoner. Legge disse i blockchain og validere. Nettside hvor hver node kan se sine produsert/konsumert strøm. Nettside for smart kontrakter. Rekker sannsynligvis ikke implementasjon av tokens.

@@ -175,7 +175,7 @@ class PeerManager(Factory):
 		"""
 		Let client to connect to other nodes pased on port
 		"""	
-		endpoint = TCP4ClientEndpoint(reactor, '127.0.0.1', connect_port)
+		endpoint = TCP4ClientEndpoint(reactor, '192.168.0.16', connect_port)
 		d = connectProtocol(endpoint, Peer(self))
 		d.addCallback(self.got_protocol)
 		d.addErrback(log.err)

@@ -1,6 +1,7 @@
 from node import Node
 from storage import Config
 import sys, optparse, uuid
+import socket
 from twisted.internet import reactor
 from twisted.python import log
 
@@ -35,6 +36,11 @@ def parse_args():
 def main():
     log.startLogging(sys.stdout)
     host, connect = parse_args()
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    print(s.getsockname()[0])
+    s.close()
 
     """
     Assume node uses same hostport if it restarts after a crash

@@ -8,6 +8,7 @@
 \usepackage{datetime}
 \usepackage{graphicx}
 \usepackage{subcaption}
+\usepackage{amsmath}
 \usepackage{fancyhdr}
 \usepackage[toc,page]{appendix}
 \usepackage{pdfpages}
@@ -30,8 +31,8 @@
 
 \import{front_page}{front_page.tex}
 
-%\includepdf[pages={1,2}]{oppgavetekst.pdf}
-%\addcontentsline{toc}{chapter}{Project Description}
+\includepdf[pages={1}]{oppgavetekst.pdf}
+\addcontentsline{toc}{chapter}{Project Description}
 
 \pagenumbering{roman}
 \setcounter{page}{1}
@@ -54,15 +55,15 @@
 \tableofcontents
 \addcontentsline{toc}{chapter}{Table of Contents}
 
-%\let\cleardoublepage\clearpage
-%\listoffigures                                  
-%\addcontentsline{toc}{chapter}{List of Figures}
+\let\cleardoublepage\clearpage
+\listoffigures                                  
+\addcontentsline{toc}{chapter}{List of Figures}
 \cleardoublepage
 
 
-%\listoftables                                   
-%\addcontentsline{toc}{chapter}{List of Tables}
-%\cleardoublepage
+\listoftables                                   
+\addcontentsline{toc}{chapter}{List of Tables}
+\cleardoublepage
 
 \pagenumbering{arabic}
 \setcounter{page}{1}
@@ -77,9 +78,9 @@
 \let\cleardoublepage\clearpage
 \import{./}{spec.tex}
 \let\cleardoublepage\clearpage
-\import{./}{implementation.tex}
-\let\cleardoublepage\clearpage
 \import{./}{design.tex}
+\let\cleardoublepage\clearpage
+\import{./}{implementation.tex}
 \let\cleardoublepage\clearpage
 \import{./}{testing.tex}
 \let\cleardoublepage\clearpage

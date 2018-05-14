@@ -5,10 +5,48 @@ Strong Consistency
 Efficiency - update log is very inefficient
 Store all peers since finite size of network?
 No protection against brute force attacks on network IP/port 
+
+Logical p2p, cannot prove or guarantee that the electrons from one producer ends up at the consumer of which it has a smart contract with. Consumers pay the producer for the electricity they have consumed and the producer produced, even if it is not the exact same electricity.
+
+advantages of building own blockchain and smart contract system is that it ensure zero transactional fees in the system. more control over data?
+disadvantages include maintenance of code and documentation, more work trough implementation and testing
+
+settlement and storage in parallel. use transaction blockchain to audit that settlements done right, immutable properties ensures correct information
+
+What differs in this solution, compared to the other solutions from the background chapter?
+DESCRIBE SHORTCOMINGS IN SYSTEM IN RELATION TO DESIGN
+ - Communication: open connection between all nodes, limit to e.g. 5 and broadcast numbered messages until all nodes have received them. 
+ - Consensus: limit consensus nodes to only 5. 
+ 
+Reasons for RAFT
+
+Discuss how the functional specs are satisfied or not, refer to by number
+
+
+  
+
 \section{Conclusion}
+To build such a system on top of existing blockchains such as Bitcoin or Ethereum, may result in a costly system, due to relatively large transactions fees and many, low-value transactions in the microgrid network. Ethereum, in addition, requires Ether to run applications/smart contracts on the EVM. Using the modular blockchain of Hyperledger might be a better idea, however - some cost?
+
+The blockchain implemented in this thesis is able to run and process all transactions in the network at no additional cost.
+
+Consortium - node ids are linked to identities - if a node tries to attack the blockchain, its identity will be known and actions may be taken thereafter. 
+
+Transparency - account owners can at any time review there account actions. Super user can see everything
+
+Problem - all users can review all other users account activity through the blockchain ledger - however it is a rigorous task to read all account activity from the ledger. Thus, the application layer exist to make it easier to monitor account activity - and this is only available to the account owner. 
 
 \section{Future Work}
 Current implementation stores blockchain and other logs locally on machine, a future improvement could be to store the data in the cloud to save space. (Crashes, but not so relevant since data is duplicated across the network)
 
 To save space, blocks containing transactions that are settled or smart contracts that are no longer valid can be deleted. 
 
+Make new users part of validation - to ensure true consortium. Current solution can be attacked through brute force, since the only requirement to join is to know the IP address and port number of an existing node on the network.
+
+Automatic selection of who to initiate smart contract with for consumer based on pre-defined constraints 
+
+Only some nodes part of validation? and let these have open connections to each other, let remaining nodes have connections to at least one of the validation nodes. 
+
+Merkel trees for scalability
+
+Automatic smart contract based on pre-set prices given by prosumer and consumer

@@ -39,6 +39,7 @@ class Node(PeerManager):
         self.validator = Validator(self.nodeid, self.reactor, self.connections, self.blockchain_log, self.proposed_block_log, hostport)
         self.get_head_block_and_index() #TODO; MAKE OWN FUNCTION ONLY RUNNING AT INIT
         self.validator.commit_index = self.blockchain_log.last_index()
+        #self.wallet/bill iou
         LoopingCall(self.state_machine).start(4) 
         
         
