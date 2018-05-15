@@ -47,7 +47,7 @@ class Peer(IntNStringReceiver):
 			self.handle_hello(msg)
 
 			#Send acknowlege and own peerlist
-			messages.send_hello_ack(self, self.factory.nodeid, self.factory.hostport)
+			messages.send_hello_ack(self, self.factory.nodeid, self.factory.host_ip, self.factory.hostport)
 			messages.send_peers(self, self.factory.peers)
 
 		elif msg_type == 'ack':
@@ -80,8 +80,9 @@ class Peer(IntNStringReceiver):
 		msg = {
 			'msgtype': 'hello', 
 			'nodeid': self.factory.nodeid, 
+			'host_ip': self.factory.host_ip,
 			'hostport': self.factory.hostport
-		} #Add IP?
+		} 
 		self.sendString(pickle.dumps(msg))
 
 
@@ -90,7 +91,7 @@ class Peer(IntNStringReceiver):
 		If not already added peer, add to peers, connections and start pinging
 		"""
 		self.remote_nodeid = msg['nodeid']
-		self.factory.add_peers(self.remote_nodeid, msg['hostport'])
+		self.factory.add_peers(self.remote_nodeid, msg['host_ip'], msg['hostport'])
 		if self.remote_nodeid not in self.factory.connections:
 			if self.remote_nodeid == self.factory.nodeid and self.factory.own_connection == None:
 				self.factory.own_connection = self
@@ -109,10 +110,11 @@ class Peer(IntNStringReceiver):
 		"""
 	
 		for peer in msg['peers']:
-			host = msg['peers'][peer]
+			host_ip, host_port = msg['peers'][peer]
+			
 			#Make connections to peers not already connected too
 			if peer not in list(self.factory.connections.keys()):
-				self.factory.connect_to_peer(host)
+				self.factory.connect_to_peer(host_ip, host_port)
 	
 
 class PeerManager(Factory):
@@ -121,9 +123,10 @@ class PeerManager(Factory):
 	that is persistant between connections
 	"""
 
-	def __init__(self, hostport, nodeid): #peertype
+	def __init__(self, host_ip, hostport, nodeid): #peertype
 		#include ip in addition to port
 		self.hostport = hostport #Port to start node server
+		self.host_ip = host_ip
 		self.nodeid = nodeid #Id of node
 		self.peers = {} #Connected peers - used to notify connecting nodes of other peers in network
 		self.connections = {} #Conections in network used for messaging
@@ -152,13 +155,14 @@ class PeerManager(Factory):
 		for peer in self.peers:
 			print(peer)
 
-	def add_peers(self, peer, hostport):
+	def add_peers(self, peer, host_ip, hostport):
 		"""
 		Add new peers if not already added, not self and not connected to max number of peers
 		"""
 		if peer not in self.peers and hostport != self.hostport:
-			print("Added peer:", peer, hostport)
-			self.peers[peer] = hostport
+			print("Added peer:", peer, host_ip, hostport)
+			self.peers[peer] = host_ip, hostport
+			print(self.peers[peer])
 
 	def remove_peer(self, peer):
 		"""
@@ -171,11 +175,11 @@ class PeerManager(Factory):
 			except:
 				pass
 
-	def connect_to_peer(self, connect_port):
+	def connect_to_peer(self, connect_ip, connect_port):
 		"""
 		Let client to connect to other nodes pased on port
 		"""	
-		endpoint = TCP4ClientEndpoint(reactor, '192.168.0.16', connect_port)
+		endpoint = TCP4ClientEndpoint(reactor, connect_ip, connect_port)
 		d = connectProtocol(endpoint, Peer(self))
 		d.addCallback(self.got_protocol)
 		d.addErrback(log.err)
@@ -215,14 +219,14 @@ class PeerManager(Factory):
 		print ('Failed to connect to:', connector.getDestination())
 		self.finished(0)
 
-	def run_node(self, hostport, connect_port, nodeid):
+	def run_node(self, host_ip, host_port, connect_ip, connect_port, nodeid):
 		"""
 		Start server on host given by user
 		Start client and connect to host given by user
 		"""
-		endpoint = TCP4ServerEndpoint(reactor, hostport)
+		endpoint = TCP4ServerEndpoint(reactor, host_port)
 		d = endpoint.listen(self)
 		d.addErrback(log.err)
 		
-		self.connect_to_peer(connect_port)
+		self.connect_to_peer(connect_ip, connect_port)
 		

@@ -23,12 +23,12 @@ CORNER CASE - NEW NODES AND ELECTION HAPPENING AT THE SAME TIME
 """
 
 class Node(PeerManager):
-    def __init__(self, hostport, nodeid, config_log):
+    def __init__(self, host_ip, hostport, nodeid, config_log):
         """
         Subclass of PeerManager
         peers_alive holds the time of last pong message for all connected peers
         """
-        super().__init__(hostport, nodeid)
+        super().__init__(host_ip, hostport, nodeid)
         self.peers_alive = {}
         self.blockchain_log = Blockchain_log(str(hostport)) #WRITE GENESIS BLOCK TO LOG - CHIAN UPDATED IN SM IF COMMIT INDEX > LAST APPLIED
         self.proposed_block_log = Proposed_blocks_log(str(hostport))

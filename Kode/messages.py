@@ -1,19 +1,21 @@
 import pickle, random, time
 
-def send_hello(conn, nodeid, hostport):
+def send_hello(conn, nodeid, host_ip, hostport):
     msg = {
         'msgtype': 'hello', 
         'nodeid': nodeid, 
+        'host_ip': host_ip,
         'hostport': hostport
-    } #Add IP?
+    } 
     send_msg(conn, msg)
 
-def send_hello_ack(conn, nodeid, hostport):
+def send_hello_ack(conn, nodeid, host_ip, hostport):
     msg = {
         'msgtype': 'ack', 
         'nodeid': nodeid, 
+        'host_ip': host_ip,
         'hostport': hostport
-    } #Add IP?
+    } 
     send_msg(conn, msg)  
 
 def send_peers(conn, peers):
