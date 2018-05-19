@@ -162,8 +162,6 @@ class PeerManager(Factory):
 		if peer not in self.peers and hostport != self.hostport:
 			print("Added peer:", peer, host_ip, hostport)
 			self.peers[peer] = host_ip, hostport
-			print(self.peers[peer])
-
 	def remove_peer(self, peer):
 		"""
 		Delete peer from peer list if connection is lost

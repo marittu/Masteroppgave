@@ -185,6 +185,8 @@ class Config():
     """
     def __init__(self, port):
         self.filename = 'Log/Config/'+str(port)+'_config.txt'
+        if not os.path.exists(os.path.dirname(self.filename)):
+            os.makedirs(os.path.dirname(self.filename))
 
     def write(self, data):
         with open(self.filename, 'a') as f:

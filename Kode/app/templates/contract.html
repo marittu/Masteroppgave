@@ -1,0 +1,22 @@
+<html>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <body>
+    {% extends "layout.html" %}
+    {% block content %}
+        <div class ="contract">
+            <h1>Available Producers</h1>
+            <p>Click on a producer to create a smart contract.</p>
+        </div>
+        <tr class='clickable-row' data-href="" method = POST> 
+            {{ table|safe }}
+        </tr>
+        
+    {% endblock %}
+    </body>
+</html>
+
+jQuery(document).ready(function($) {
+    $(".clickable-row").click(function() {
+        window.location = $(this).data("href");
+    });
+});

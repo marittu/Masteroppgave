@@ -5,7 +5,7 @@ Following is a list of the resources used in this system implementation:
 \begin{itemize}
 \item Python for implementation of the system
 \item Python framework Twisted for network communication
-\item Website?
+\item Website? Flask
 \end{itemize}
 
 \subsection{Python}
@@ -45,7 +45,7 @@ The module consists of two classes, a \textit{PeerManager} and a \textit{Peer}. 
 
 \textit{Peer} is a subclass of the Twisted protocol \textit{IntNStringReceiver}. This means that each received message is a callback to the method \textit{stringReceived}. The \textit{Peer} class also keeps track of information in a connection between two peers. This includes a method for discovering when the connection is lost. The main method of the \textit{Peer} class is the \textit{stringReceived} method. Based on what message type was received, the method decides what to do with the message. 
 
-The initial message sent by a client, node A, connecting to a new server, node B, is the \textit{hello} message. This includes the client's node id, IP address, and host port which is information the server on node B keeps track of for all its peers. If the connection is successful, the server on node B acknowledges the message by sending its own node id, IP address, and port number for node A to store. Server B proceeds to send a message containing information about all its peers to node A. Node A then starts a new client for all the peers it is not already connected to and repeats the process described above. 
+The initial message sent by a client, node A, connecting to a new server, node B, is the \textit{hello} message. This includes the client's node id, IP address, and host port which is information the server on node B keeps track of for all its peers. If the connection is successful, the server on node B acknowledges the message by sending its own node id, IP address, and port number for node A to store. Server B proceeds by sending a message containing information about all its peers to node A. Node A then starts a new client for all the peers it is not already connected to and repeats the process described above. 
 
 Other messages received are processed in the factory, and further handled by the \textit{Node} object.
 
@@ -61,7 +61,7 @@ The leader keeps a timer on the proposed block. If a timeout occurs before a maj
 \subsection{Consensus Module}
 The consensus module used in this system is Raft. 
 
-The consensus module consists of a \textit{Validator} class. A \textit{Validator} object is created by the \textit{Node} object, to handle the validation and consensus in the blockchain. Once a \textit{Validator} object is created, a \textit{leader election timer} starts. The timeout is canceled if the node receives a message from a leader. If the timeout occurs, the \textit{start leader election} method is called. A node promotes itself to a candidate, starts a new term and votes for itself as leader before requesting votes from its peers with the \textit{request vote} RPC. 
+The consensus module consists of a \textit{Validator} class. A \textit{Validator} object is created by the \textit{Node} object, to handle the validation and consensus in the blockchain. Once a \textit{Validator} object is created, a \textit{leader election timer} starts. The timeout is cancelled if the node receives a message from a leader. If the timeout occurs, the \textit{start leader election} method is called. A node promotes itself to a candidate, starts a new term and votes for itself as leader before requesting votes from its peers with the \textit{request vote} RPC. 
 
 A follower receiving a \textit{request vote} RPC will vote for the candidate if it has not already vote in that term or not voted for someone else. The follower will also verify that the candidate's blockchain log is at least as up to date as its own before casting the vote. If the candidate receives a majority vote it will establish itself as leader by sending out an \textit{append entries} RPC. 
 

@@ -1,4 +1,5 @@
-\documentclass[dvipsnames, b5paper, twoside, openright]{report}
+\documentclass[pdftex,10pt,b5paper,twoside]{book}
+\usepackage[lmargin=25mm,rmargin=25mm,tmargin=27mm,bmargin=30mm]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[Lenny]{fncychap}
 \usepackage[english]{babel}
@@ -31,7 +32,7 @@
 
 \import{front_page}{front_page.tex}
 
-\includepdf[pages={1}]{oppgavetekst.pdf}
+\import{./}{problem.tex}
 \addcontentsline{toc}{chapter}{Project Description}
 
 \pagenumbering{roman}

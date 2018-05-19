@@ -41,6 +41,8 @@ class Node(PeerManager):
         self.validator.commit_index = self.blockchain_log.last_index()
         #self.wallet/bill iou
         LoopingCall(self.state_machine).start(4) 
+        #LoopingCall for new transaction data
+        #
         
         
 

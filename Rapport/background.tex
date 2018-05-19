@@ -6,11 +6,11 @@ A microgrid is a local power grid that may or may not be connected to the main g
 
 \enquote{\textit{A Microgrid is a group of interconnected loads and distributed energy resources within clearly defined electrical boundaries that acts as a single controllable entity with respect to the grid.}} \cite{micro_securicon}
 
-Microgrids usually include renewable energy sources, such as wind generators, small hydro power generation, and photovoltaic solar panels, that are locally grouped together. Microgrids may also include generators and batteries to ensure reliability. \cite{general_microgrid} By placing power generation and power usage closer together, efficiency will be increased and transmission losses reduced \cite{Microgrid_konashevych}. 
+Microgrids usually include renewable energy sources, such as wind generators, small hydro power generation, and photovoltaic solar panels, that are locally grouped together. Microgrids may also include generators and batteries to ensure reliability \cite{general_microgrid}. By placing power generation and power usage closer together, efficiency will be increased and transmission losses reduced \cite{Microgrid_konashevych}. 
 
 A key benefit of the microgrid, is the ability of being self-sufficient in case of emergencies that cause blackouts. By disconnecting from the grid, the locale area powered by the microgrid can operate for days without any connection to the main grid. This happened, for instance, in New York during hurricane Sandy in 2012 \cite{sandy}. The city was without power for several days, but hospitals and other key facilities could operate due to microgrids. 
 
-Places that are not connected to the main grid have very expensive solutions for getting power. This can be rural places or islands. They may also benefit from microgrids. The ability to operate in island-mode will provide better electricity services at a lower cost than e.g. importing diesel. \cite{abb}
+Places that are not connected to the main grid have very expensive solutions for getting power. This can typically be rural places or islands. They may also benefit from microgrids. The ability to operate in island-mode will provide better electricity services at a lower cost than e.g. importing diesel \cite{abb}.
 
 INCLUDE SOME STUFF ON HOW ELECTRONS TRAVEL ON THE GRID 
 
@@ -57,7 +57,7 @@ The characteristics of public, private and consortium blockchains are summarized
  \captionof{table}{Comparison between public, private, and consortium blockchains.}
   \label{table:private} 
   \begin{center}
-  \scalebox{0.82}{
+  \scalebox{0.90}{
   \begin{tabular}{*{4}{|c}|}
   
   \hline
@@ -152,7 +152,7 @@ Some of the major problems related to PoW come from the latency and vast amounts
 
 Nakamoto shows that the probability of an attacker altering a block decreases as more blocks are added on top of it \cite{Nakamoto_bitcoin}. However, the probability never reaches zero. An example of this is the 51 \% attack, where a group wishing to attack the blockchain gains 51 \% of the computation power, and thus is in control of the blockchain. 
 
-PoW ensures that the blockchain reaches consensus eventually. Due to the possibilities of forks in the chain, it might take some time for the network to agree on the final version of the ledger. This results in slow transaction time with only 7 transactions per second, compared to VISAs throughput of 10 000 transactions per second \cite{understanding_consensus}. 
+PoW ensures that the blockchain eventually reaches consensus. Due to the possibilities of forks in the chain, it might take some time for the network to agree on the final version of the ledger. This results in slow transaction time with only 7 transactions per second, compared to VISAs throughput of 10 000 transactions per second \cite{understanding_consensus}. 
 
 \subsection{Proof of Stake}
 Proof of Stake (PoS) was created to solve the energy problem of PoW \cite{understanding_consensus, Zheng_overview}. Nodes are chosen to participate in the consensus process in a deterministic manner, based on the amount of stake they have in the system. This means that if a node, or stakeholder has 10 times more assets in the network than another node, it is 10 times more likely \cite{ethereum_wiki} to be chosen to forge new blocks and hence receive a reward. The reward in PoS comes from transaction fees, as there are no new coins to be mined, or created, since all coins exists from the start of the blockchain. 
@@ -263,7 +263,7 @@ Hyperledger Fabric provides consensus as a modular component in the system, supp
 %SUM UP TABLE, discuss scalability. Both Raft and PBFT require a lot of message passing which does not scale well when the system becomes large. 
 
 This is perhaps the most challenging aspect in order to create a blockchain. Different types of blockchains require different types of consensus models.  
-At this point, there does not exist a single best consensus model. Limitations and restrictions are present in regard to power consumption, scaling, security and transaction speed. These challenges will be further discussed in the following section. 
+At this point, no single best consensus model exists. Limitations and restrictions are present in regard to power consumption, scaling, security and transaction speed. These challenges will be further discussed in the following section. 
 
 %\section{Security and Weaknesses in Blockchain technology} \label{security}
 %51 percent attacks https://learncryptography.com/cryptocurrency/51-attack - older blocks more secure, newer blocks more vulnerable to double spending attacks achieved by mining faster than the rest of the network
@@ -287,7 +287,7 @@ At this point, there does not exist a single best consensus model. Limitations a
 
 %https://arxiv.org/pdf/1703.03779.pdf ponzi on ethereum
 \section{Blockchains and Their Applications}
-Numerous blockchains have been created since the Bitcoin blockchain was published. Many blockchains, like Bitcoin, are based around crypto-currency. However, there are several blockchain with other purposes than being purely a crypto-currency, such as Ethereum. Some of these blockchains will be discussed in this section.
+Numerous blockchains have been created since the Bitcoin blockchain was published. Many blockchains, like Bitcoin, are based around crypto-currency. However, there are several blockchain with other purposes than being purely a crypto-currency, such as the Ethereum blockchain. Some of these blockchains will be discussed in this section.
 
 \subsection{Bitcoin}
 How Bitcoin works, was roughly described in section \ref{blockchain_basics}. This section will discuss what Bitcoin is used for and in what applications it is beneficial for. Bitcoin is first and foremost a crypto-currency blockchain, so the applications are financial.
@@ -305,7 +305,7 @@ A smart contract is code enabling self-enforcing applications, through a pre-def
 
 Inspired by Bitcoin, Buterin came up with a platform to expand the limited financial use cases available in the Bitcoin blockchain. Ethereum is a programable blockchain. Protocols run on the Ethereum Virtual Machin (EVM) \cite{ethereum_docs}. Applications are created by users in the Turing complete programming language, solidity, and executed on the EVM. When an operation is executed on an EVM, it is simultaneously executed on all nodes in the network.
 
-Applications on Ethereum can either be financial, non-financial or semi-financial. Like Bitcoin, Ethereum also has a native crypto currency, ether. However, unlike Bitcoin, the ether has a purpose other than simply being a crypto currency. In order to run applications on the Ethereum blockchain, a small fee, or gas price, is required. This is to ensure efficient and economical code, as each computational step in the code requires a certain amount of gas \cite{ether_white_paper}.
+Applications on Ethereum can either be financial, non-financial or semi-financial. Like Bitcoin, Ethereum also has a native crypto currency, Ether. However, unlike Bitcoin, Ether has a purpose other than simply being a crypto currency. In order to run applications on the Ethereum blockchain, a small fee, or gas price, is required. This is to ensure efficient and economical code, as each computational step in the code requires a certain amount of gas \cite{ether_white_paper}.
 
 Whereas Bitcoin only allows users to interact with the blockchain through a set of pre-defined operations, Ethereum allows users to create operations with arbitrary complexity.
 
@@ -408,7 +408,7 @@ The company started working with the public blockchain Ethereum \cite{medium_bm,
 The microgrid was developed by the Siemens Digital Grid Division, while the blockchain platform was developed by LO3 Energy. 
 Each participant in the project has a meter installed. These meters communicate with each other, and other smart devices. Furthermore, they measure the energy production and consumption. The key factor, however, is that these meters form the blockchain \cite{medium_bm, hbr_grid}. Transactions from each meter is stored on the blockchain, while all meters contribute with the computational power necessary to run the blockchain and validate the transactions. 
 
-Mengelkamp et al. \cite{Brooklyn_Mengelkamp} present a case study of the Brooklyn Microgrid. The project consists of both a virtual platform and a physical microgrid. The microgrid is built in parallel with the existing grid, and is able to uncouple from the traditional gird in case of power outages. The virtual platform is the technical infrastructure, and runs a private blockchain. The virtual layer is where all the information of the network is transferred. 
+Mengelkamp et al. \cite{Brooklyn_Mengelkamp} presented a case study of the Brooklyn Microgrid. The project consists of both a virtual platform and a physical microgrid. The microgrid is built in parallel with the existing grid, and is able to uncouple from the traditional gird in case of power outages. The virtual platform is the technical infrastructure, and runs a private blockchain. The virtual layer is where all the information of the network is transferred. 
 
 \begin{figure}[htb]
     \centering

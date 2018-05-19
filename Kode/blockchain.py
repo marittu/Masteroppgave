@@ -39,9 +39,7 @@ class Block():
         Validate block based on the latest commited block in the chain
         TODO: validate transactions in block
         """
-        print(self.index, neighbour_block.index + 1)
-        print(self.previous_hash, neighbour_block.new_hash)
-        print(self.new_hash, self.get_hash)
+       
         if self.index != neighbour_block.index + 1:
             return False
         if self.previous_hash != neighbour_block.new_hash:
