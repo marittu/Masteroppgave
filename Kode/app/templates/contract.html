@@ -7,16 +7,44 @@
             <h1>Available Producers</h1>
             <p>Click on a producer to create a smart contract.</p>
         </div>
-        <tr class='clickable-row' data-href="" method = POST> 
-            {{ table|safe }}
-        </tr>
         
+
+     <table class="tab">
+        <tr>
+            <th>Producer</th>
+            <th>Minimum Delivery (kWh)</th>
+            <th>Price (NOK)</th>
+            {%for k, v in table.items()%}
+                <tr>
+                    <td> 
+                    <button type="button" onclick="myFunction()">
+                        <div id="prod"> {{k}} </div>
+                    </button>
+                    </td>
+                    {%for i in v%}
+                        <td id='data'>{{i}}</td>
+                    {%endfor%}
+                </tr>
+            {%endfor%}
+        </tr>
+     </table>
+    <form action="/contract/" method="post">
+         
+    </form>
+     <p> Seller:</p>
+     <p id="form"></p>  
+     
+     <p id="min"></p>
+     <script>
+        function myFunction () {
+            document.getElementById('id01').style.display='block'
+            document.getElementById("form").innerHTML = document.getElementById("prod").innerHTML;
+            document.getElementById("min").innerHTML = document.getElementById("data").innerHTML;
+        }
+     </script>
+
+
     {% endblock %}
     </body>
 </html>
 
-jQuery(document).ready(function($) {
-    $(".clickable-row").click(function() {
-        window.location = $(this).data("href");
-    });
-});
