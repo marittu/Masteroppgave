@@ -61,16 +61,20 @@ def home():
 
 def get_table():
     sellers = pd.read_excel('availability.xlsx')
-    sellers.set_index(['Producer'], inplace=True)
-    sellers.index.name=None
-    return sellers
+    sellers = sellers.to_dict('split')
+    sellers_dict = {}
+    for line in sellers['data']:
+        sellers_dict.update({line[0]: [line[1], line[2]]})
+    
+    return sellers_dict
 
 
 @app.route('/contract/')
 
 def contract():
     table = get_table()
-    return render_template('contract.html', table=table.to_html())
+    #table={'id':[3,0.3], 'id2':[4,0.5], 'id3':[3.5,0.2]}
+    return render_template('contract.html', table=table)#table=table.to_html())
 
 if __name__ == '__main__':
     #home()
