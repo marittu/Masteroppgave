@@ -1,6 +1,7 @@
 from twisted.internet.defer import Deferred
 from blockchain import Block
-import time, os
+import time, os, json, pickle 
+from ast import literal_eval
 from datetime import datetime
 
 #TODO: MAKE DEFERRED
@@ -190,7 +191,8 @@ class Config():
 
     def write(self, data):
         with open(self.filename, 'a') as f:
-                f.write(data+'\n')
+                f.write(str(data) + '\n')
+                
         f.close()
 
     def read(self):
@@ -204,7 +206,15 @@ def clean_string(string):
     """
     Strips string of all extra symbpls
     """
-    strip = " '\'[]\"{}()\\n"
+    strip = " '\'[]\"{}()\\n "
+    new_string = str(string).translate(str.maketrans('', '', strip))
+    return new_string
+
+def clean_tx(string):
+    """
+    Strips string of all extra symbpls
+    """
+    strip = " {}()"
     new_string = str(string).translate(str.maketrans('', '', strip))
     return new_string
 
@@ -213,22 +223,30 @@ def block_to_string(block):
     Converts a Block object to a string
     """
     string = {
-        'Index': block.index,
-        'Previous hash': block.previous_hash,
-        'Timestamp': block.timestamp,
-        'Transactions': block.transactions,
-        'Block hash': block.new_hash,
+        "Index": block.index,
+        "Previous hash": block.previous_hash,
+        "Timestamp": block.timestamp,
+        "Block hash": block.new_hash,
+        "Transactions": block.transactions,
+        #"Contract": block.contract,
     }
-    return string
+    return string #json.dumps(string)
 
-def string_to_block(string): 
+def string_to_block(string):
     """
     Converts a string to a Block object
     """
+    #print(string)
     index = int(clean_string(string[0].split(':')[1:]))
     previous_hash = clean_string(string[1].split(':')[1:])
     timestamp = float(clean_string(string[2].split(':')[1:]))
-    transactions = clean_string(string[3].split(':')[1:])
-    new_hash = clean_string(string[4].split(':')[1:])
+    new_hash = clean_string(string[3].split(':')[1:])
+    transactions = str(clean_tx(string[4:]))
+    transactions = transactions.replace('[\"\'Transactions\':', '').replace('\\n]', '').replace('\"', '')
+
+    if transactions == 'None\\n]':
+        transactions = None
     
+    #print('tx', transactions)
     return Block(index, previous_hash, timestamp, transactions, new_hash)
+    

@@ -6,20 +6,17 @@ class Block():
         self.index = index
         self.previous_hash = previous_hash
         self.timestamp = timestamp
-        self.transactions = []
+        self.transactions = transactions#[]
         self.new_hash = new_hash
-        if transactions:
-            for tx in transactions:
-                self.transactions.append(tx)
-        #if args:
-        #    for arg in args:
-        #        self.transactions.append(arg)
+        #if transactions:
+        #    self.add_transaction(transactions)
+        
+        #if contract:
+        #    self.add_contract(contract)
 
     def add_transaction(self, transactions):
         for tx in transactions:
-            if tx.validate_transaction():
-                self.transactions.append(tx)
-
+            self.transactions.append(tx)
 
     def get_hash(self):
         new_hash = str(self.index)+str(self.previous_hash)+str(self.timestamp)+str(self.transactions)
@@ -39,7 +36,6 @@ class Block():
         Validate block based on the latest commited block in the chain
         TODO: validate transactions in block
         """
-       
         if self.index != neighbour_block.index + 1:
             return False
         if self.previous_hash != neighbour_block.new_hash:
@@ -50,6 +46,7 @@ class Block():
         #if neighbour_block.index != 0:
         #    if (self.timestamp - neighbour_block.timestamp) > 60:
         #        return False
+
         return True
 
     def propose_block(self, head_block):

@@ -4,11 +4,11 @@
     {% extends "layout.html" %}
     {% block content %}
         <div class ="contract">
-            <h1>Available Producers</h1>
+            <h1 align="center">Available Producers</h1>
         </div>
         
 
-     <table class="tab">
+     <table class="tab" align="center">
         <tr>
             <th>Producer</th>
             <th>Minimum Delivery (kWh)</th>
@@ -28,11 +28,11 @@
      <h2>Fill out the form to create a smart contract</h2>
     <form action="/contract/" method="post">
         <div id="tab">
-            <label for="prod">Producer Public Key:</label>
+            <label for="prod">Producer Node ID:</label>
             <input type="text" id="prod" name="producer_id">
         </div>
         <div id="tab">
-            <label for="buyer">Buyer Public Key:</label>
+            <label for="buyer">Buyer Node ID:</label>
             <input type="text" id="buyer" name="buyer_id">
         </div>
         <div id="tab">

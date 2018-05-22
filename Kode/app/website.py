@@ -17,10 +17,10 @@ def get_plot():
     with open('test1.csv') as data:
         next(data)
         for line in csv.reader(data):
-            datetime_obj = datetime.strptime(line[0].strip(), '%d-%m-%y %H:%M')
+            datetime_obj = datetime.strptime(line[0], '%d-%m-%y %H:%M')
             time.append(datetime_obj)
             consumed.append(line[1])
-            produced.append(line[2])
+            produced.append(line[2].strip('-'))
     cons = go.Scatter(
         x = time,
         y = consumed,

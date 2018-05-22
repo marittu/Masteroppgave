@@ -45,7 +45,7 @@ class Validator():
         
         self.last_log_index = 0 #highest log entry known, not yet commited (latest propose_block)
         self.last_log_term = 0 #term of last log index
-        self.block_term = 0 #TODO: REMOVE
+        self.block_term = 0 
         self.commit_index = 0 #highest log entry applied to state machine (index of head_block)
         
         self.leader_conn = None
@@ -57,7 +57,7 @@ class Validator():
 
         #Used for sending messages
         self.connections = connections
-        #self.followers = {} MAYBE USE TO EXTRACT NODES WITH NONE STATE
+        self.connection_keys = {} #nodeid: key
 
         self.block_timeout = None
         self.election_timeout = None        
@@ -248,7 +248,9 @@ class Validator():
         self.state = LEADER
         if self.election_timeout != None: self.election_timeout.cancel()
         self.election_timeout = None
-              
+        for nodeid, conn in self.connections.items():
+            if nodeid == self.nodeid:
+                self.leader_conn = conn
         self._initialize_views()
         self.append_entries(propose_block=None) #Send empty message to assert leadership
         
@@ -280,7 +282,7 @@ class Validator():
 
     def start_block_timeout(self):
         if self.state == LEADER:
-            self.block_timeout = self.reactor.callLater(10, self.step_down)
+            self.block_timeout = self.reactor.callLater(120, self.step_down) #2x new blocktime
 
     def stop_block_timeout(self):
         if self.block_timeout != None: self.block_timeout.cancel()
@@ -323,11 +325,25 @@ class Validator():
         else:
             self.request_votes()
 
-    def new_connection(self, conn):
+    def valid_signature(self, block):
+        
+        c = contract.split(',')
+        no1 = clean_string(c[0])
+        no2 = clean_string(c[1])
+        sign1 = block.contract['sign1']
+        sign2 = block.contract['sign2']
+        if self.connection_keys[no1].verify(sign1, contract.encode('utf-8')) and self.connection_keys[no2].verify(sign2, contract.encode('utf-8')):
+            return True
+    
+        return False
+
+    def new_connection(self, conn, key):
         """
         Helper function for adding new connections
         """
         self.connections.update(conn)
+        self.connection_keys.update(key)
+       
         if self.state == LEADER:
             for nodeid in conn:
                 self.next_index[nodeid] =  self.last_log_index + 1
@@ -338,6 +354,7 @@ class Validator():
         Helper function for deleting old connections
         """
         self.connections.pop(conn)
+        #self.connection_keys(conn)
         if self.state == LEADER:
             self.next_index.pop(conn)
             self.match_index.pop(conn)

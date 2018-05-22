@@ -1,7 +1,8 @@
 from node import Node
-from storage import Config
-import sys, optparse, uuid
-import socket
+from storage import Config, clean_string
+import sys, optparse, uuid, os
+from ecdsa import SigningKey, VerifyingKey
+import socket, pickle
 from twisted.internet import reactor
 from twisted.python import log
 
@@ -40,7 +41,6 @@ def main():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
     host_ip = s.getsockname()[0]
-    print(s.getsockname()[0])
     s.close()
 
     """
@@ -49,23 +49,32 @@ def main():
     it will be able to continue from where it left off, 
     otherwise it creates a new log with a new nodeid
     """
+   
+    #Make two functions - try: read_from file, except: create config - also make run_node function
+
     try:
         with open('Log/Config/'+str(host_port)+'_config.txt', 'r') as f:
             nodeid = f.readline().rstrip()
-
+        private_key = SigningKey.from_pem(open('Log/Config/'+str(nodeid)+'private_key.pem', 'rb').read())
+        public_key = VerifyingKey.from_pem(open('Log/Config/'+str(nodeid)+'public_key.pem', 'rb').read())
         config_log = Config(str(host_port))
     
     except:
         nodeid = str(uuid.uuid4())
         config_log = Config(str(host_port))
-        
         #Write nodeid to stable storage and initialize empty vote
         config_log.write(nodeid)
-        
-        
 
+        private_key = SigningKey.generate()
+        public_key = private_key.get_verifying_key()
+        open('Log/Config/'+str(nodeid)+'public_key.pem',"wb+").write(public_key.to_pem())
+        open('Log/Config/'+str(nodeid)+'private_key.pem',"wb+").write(private_key.to_pem())
+        
+            
     print(nodeid)
-    node = Node(host_ip, host_port, nodeid, config_log)
+    
+    
+    node = Node(host_ip, host_port, nodeid, config_log, public_key, private_key)
     node.run_node(host_ip, host_port, connect_ip, connect_port, nodeid)
 
     reactor.run()

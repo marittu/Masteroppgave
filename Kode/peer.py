@@ -28,6 +28,7 @@ class Peer(IntNStringReceiver):
 		self.nodeid = self.factory.nodeid
 		self.remote_nodeid = None
 		self.ping = LoopingCall(messages.send_ping, self, self.factory.nodeid)
+		self.public_key = self.factory.public_key
 
 	def connectionLost(self, reason):
 		try:
@@ -47,7 +48,7 @@ class Peer(IntNStringReceiver):
 			self.handle_hello(msg)
 
 			#Send acknowlege and own peerlist
-			messages.send_hello_ack(self, self.factory.nodeid, self.factory.host_ip, self.factory.hostport)
+			messages.send_hello_ack(self, self.factory.nodeid, self.factory.host_ip, self.factory.hostport, self.factory.public_key)
 			messages.send_peers(self, self.factory.peers)
 
 		elif msg_type == 'ack':
@@ -81,7 +82,8 @@ class Peer(IntNStringReceiver):
 			'msgtype': 'hello', 
 			'nodeid': self.factory.nodeid, 
 			'host_ip': self.factory.host_ip,
-			'hostport': self.factory.hostport
+			'hostport': self.factory.hostport,
+			'public_key': self.public_key
 		} 
 		self.sendString(pickle.dumps(msg))
 
@@ -91,13 +93,13 @@ class Peer(IntNStringReceiver):
 		If not already added peer, add to peers, connections and start pinging
 		"""
 		self.remote_nodeid = msg['nodeid']
-		self.factory.add_peers(self.remote_nodeid, msg['host_ip'], msg['hostport'])
+		self.factory.add_peers(self.remote_nodeid, msg['host_ip'], msg['hostport'], msg['public_key'])
 		if self.remote_nodeid not in self.factory.connections:
 			if self.remote_nodeid == self.factory.nodeid and self.factory.own_connection == None:
 				self.factory.own_connection = self
 			
 			self.factory.connections.update({self.remote_nodeid: self})
-			self.factory.new_conn({self.remote_nodeid: self})
+			self.factory.new_conn({self.remote_nodeid: self}, {self.remote_nodeid: msg['public_key']})
 
 		if not self.ping.running:
 				self.ping.start(PING_INTERVAL)  
@@ -110,7 +112,7 @@ class Peer(IntNStringReceiver):
 		"""
 	
 		for peer in msg['peers']:
-			host_ip, host_port = msg['peers'][peer]
+			host_ip, host_port, public_key = msg['peers'][peer]
 			
 			#Make connections to peers not already connected too
 			if peer not in list(self.factory.connections.keys()):
@@ -123,10 +125,11 @@ class PeerManager(Factory):
 	that is persistant between connections
 	"""
 
-	def __init__(self, host_ip, hostport, nodeid): #peertype
+	def __init__(self, host_ip, hostport, nodeid, public_key): #peertype
 		#include ip in addition to port
 		self.hostport = hostport #Port to start node server
 		self.host_ip = host_ip
+		self.public_key = public_key
 		self.nodeid = nodeid #Id of node
 		self.peers = {} #Connected peers - used to notify connecting nodes of other peers in network
 		self.connections = {} #Conections in network used for messaging
@@ -155,13 +158,13 @@ class PeerManager(Factory):
 		for peer in self.peers:
 			print(peer)
 
-	def add_peers(self, peer, host_ip, hostport):
+	def add_peers(self, peer, host_ip, hostport, public_key):
 		"""
 		Add new peers if not already added, not self and not connected to max number of peers
 		"""
 		if peer not in self.peers and hostport != self.hostport:
 			print("Added peer:", peer, host_ip, hostport)
-			self.peers[peer] = host_ip, hostport
+			self.peers[peer] = host_ip, hostport, public_key
 	def remove_peer(self, peer):
 		"""
 		Delete peer from peer list if connection is lost
@@ -197,14 +200,14 @@ class PeerManager(Factory):
 		elif msg_type == "blockchain":
 			self.receive_chain(msg)
 		elif msg_type == "append_entries" or msg_type == "respond_append_entries"  \
-		or msg_type == "request_vote" or msg_type == "respond_request_vote":
+		or msg_type == "request_vote" or msg_type == "respond_request_vote" or msg_type == "tx":
 			self.consensus_message(msg_type, msg, conn)
 
-	def new_conn(self, conn):
+	def new_conn(self, conn, key):
 		"""
 		Helper function for updating connections in consensus process
 		"""
-		self.add_conn(conn)
+		self.add_conn(conn, key)
 
 	def delete_conn(self, conn):
 		"""
