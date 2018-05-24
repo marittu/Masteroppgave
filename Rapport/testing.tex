@@ -1,9 +1,41 @@
 \chapter{Testing}
-Test with at least 10 nodes
-Ideally test over Ethernet/several computers - at least communication protocol
+This chapter describes how the system was tested. Section \ref{system} describes the method for how the complete system was tested. Section \ref{moduletest} specifies how the individual modules of the system were tested.
 
-unittest for blocks, ideally for consensus and communication, but not prioritized because of time limitations
+%testing: beskrivelse av testkonsept - hvor mange, forskjellige pcer beskrivelse av testoppsett, selve testen - resultatet
 
-table for time it takes to elect leader, based on number of nodes
-how long does it take to reach 1000 transaction/blocks
-How big is the file with 1000 blocks 
+\section{System Test} \label{system}
+A functional test was run on the complete system, using pseudo-random simulation data. The test approach is summarized below:
+\begin{itemize}
+\item Four prosumer nodes with 48 hours worth of test data for produced and consumed electricity, given in kWh per minute. Each node periodically read the test data from a CSV file. The four nodes were run as different processes on the same computer. 
+\item Smart contracts were manually constructed in pairs between the node, with one node selling, and one node buying electricity per contract.
+\item Transactions were settled according to the settlement module described in section \ref{settlement}. For simplicity, the price of 1 kWh was set to 1 NOK, regardless of the production source.
+\item All transactions were stored in the blockchain. Transactions from all nodes during a given interval were stored in the same block. 
+\end{itemize}
+
+\section{Module Testing} \label{moduletest}
+\subsection{Website From Consumer Perspective}
+Monitoring tested using simulation data
+Smart contract outlined
+Only tested locally
+
+\subsection{Settlement}
+While the functionality of the settlement module can be verified through the system test, a unittest was also conducted to ensure correct behavior. 
+
+\subsection{Unittest of Blocks module}
+The block module was also tested through a unittest. 
+
+\subsection{Consensus}
+Leader election time for different number of nodes
+Maximum number of nodes participating in consensus tested.
+
+\subsection{Network Module}
+Several aspects of the Network module were tested:
+\begin{itemize}
+\item Message latency from point to point.
+\item Latency of detection of new connections and closed connections.
+\item Communication with two machines on the same network.
+\item Communication with two machines on two separate networks.
+\end{itemize}
+
+
+

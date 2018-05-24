@@ -1,5 +1,5 @@
-\chapter{Discussion}
-Possible to add one more message type - ack propose block and commit several blocks to the blockchain at a time and at longer intervals
+\chapter{Discussion} \label{discussion}
+
 Correctness
 Strong Consistency
 Efficiency - update log is very inefficient
@@ -22,22 +22,32 @@ Reasons for RAFT
 
 Discuss how the functional specs are satisfied or not, refer to by number
 
+Space saving - delete smart contracts that are no longer valid. 
 
-  
+What sets this system apart from many of the other related systems, is that there are no tokens.
 
-\section{Conclusion}
-To build such a system on top of existing blockchains such as Bitcoin or Ethereum, may result in a costly system, due to relatively large transactions fees and many, low-value transactions in the microgrid network. Ethereum, in addition, requires Ether to run applications/smart contracts on the EVM. Using the modular blockchain of Hyperledger might be a better idea, however - some cost?
+%diskusjon: tolke resultat, konstantere at det virker og performance - fotavtrykk (størrelse på kjede, hvor lang tid det tar)
+%e.g. hvor lang tid tar det å få 1000 transaksjoner. diskusjon - nytt felt, enorme utviklinger bare under oppgave. Det jeg har gjort har lært meg mye
+%å bruke noe som er ferdig vil gjøre at man kommer fortere til målet
+%Ting andre lager blir vedlikeholdt
+%hva virket - hva fikk man ikke tid til - hva ønsker man skulle vært anerledes/Bedre --> videre arbeid (Begrunnelse)
+%På slutt av diskusjon - oppsummering av videre arbeid - bullet points
 
-The blockchain implemented in this thesis is able to run and process all transactions in the network at no additional cost.
+%Kritisk blikk på eget arbeid - spesielt relatert til utviklinger
+%år kutter man en kjede og begynner på nytt - 3 års horisont- etter 4 år slettes første år
 
-Consortium - node ids are linked to identities - if a node tries to attack the blockchain, its identity will be known and actions may be taken thereafter. 
+RAFT is not PBFT. Anyone can establish themselves as leader and start sending out \textit{AppendEntries} messages. In the presence of Byzantine nodes in the system, this is not suitable. By making new users part of the validation process, the risk is reduced. Since this system is implemented in a restricted physical area, where participants are neighbors and possibly acquaintances, the risk of Byzantine nodes is reduced even further.
 
-Transparency - account owners can at any time review there account actions. Super user can see everything
+\section{Privacy}
 
-Problem - all users can review all other users account activity through the blockchain ledger - however it is a rigorous task to read all account activity from the ledger. Thus, the application layer exist to make it easier to monitor account activity - and this is only available to the account owner. 
+%Krypto - privat
+%personvern - misbruk av ams - data bare tolket av de som er involvert i kjeden
+%Private nøkler, misting - et avsnitt om vern av privatdata i diskusjon
+%Diskusjon teknisk at det virker, er folk villige til å ta implementasjonen i bruk (personvern) - salg av data til firma - kriminelle ser når huset er tomt
+
 
 \section{Future Work}
-Current implementation stores blockchain and other logs locally on machine, a future improvement could be to store the data in the cloud to save space. (Crashes, but not so relevant since data is duplicated across the network)
+Current implementation stores blockchain and other logs locally on machine, a future improvement could be to store the data in the cloud to save space.
 
 To save space, blocks containing transactions that are settled or smart contracts that are no longer valid can be deleted. 
 
@@ -47,6 +57,10 @@ Automatic selection of who to initiate smart contract with for consumer based on
 
 Only some nodes part of validation? and let these have open connections to each other, let remaining nodes have connections to at least one of the validation nodes. 
 
-Merkel trees for scalability
+Merkel trees for scalability. Is there a point though, since merkel trees are for time saving (?) and we are not iterating through blockchain to find previous transactions. Maybe usable in smart contract blockchain
+
+Increase BFT by signing messages to prove authenticity. 
 
 Automatic smart contract based on pre-set prices given by prosumer and consumer
+
+Settlement - better algorithm - including taking electricity from batteries for better flow

@@ -1,5 +1,7 @@
 \chapter{Design}
 The system design is specified in this chapter. The first section illustrates the system architecture, and how the different layers in the system interact on a top-level. The last section is a detailed description of how the main modules in the system should behave.
+%structur og modulering i design 
+
 \section{System Architecture}
 The blockchain layer and the application layer design are both illustrated in this section. The interaction between the layers is illustrated at the end of the section.
 FIGURES
@@ -15,11 +17,11 @@ When a consumer and prosumer initiate a smart contract, the terms of the contrac
 \item The start time of the contract.
 \item The end time of the contract.
 \item The ID's of the prosumer and consumer.
-\item The minimum amount of electricity transacted between the contract parties.
-\item Signatures from both parties of the contract.
+\item The minimum amount of electricity transacted between the parties of the contract.
+\item Digital signatures from both parties of the contract.
 \end{enumerate}
 
-All smart contracts are stored in their own blockchain to increase efficiency. Nodes in the system use the public keys of the nodes to verify the contract before it is stored in the blockchain.
+All smart contracts are stored in their own blockchain to increase read efficiency. The contracts are verified with the public keys of the nodes, before it is stored in the blockchain.
 
 The smart contract API is callable from the website, and is triggered when two parties initiate the contract. Any node in the system can only have one active contract at a time.
 
@@ -31,17 +33,9 @@ There are two blockchains for the microgrid, one for storing all electricity tra
 \subsection{Settlement}
 When the system receives information of consumed and produced electricity of a node, the smart contract is self-enforcing in the manner that these events trigger functions that control the settlement. 
 
-If prosumer A has a smart contract with consumer B, and the system registers that these nodes have produced and consumed electricity during any interval in the duration of the contract, node B's bill will register that it owes node A for the consumed electricity of the period x the electricity price of the period, and likewise node A's bill will show that node B owes money for the electricity. 
+If prosumer A has a smart contract with consumer B, and the system registers that these nodes have produced and consumed electricity during any interval in the duration of the contract, node B's bill will register that it owes node A for the consumed electricity of the period, and likewise node A's bill will show that node B owes money for the electricity. 
 
-Three assumptions are made for the settlement process in the system.
-\begin{itemize}
-\item During any interval, the amount of electricity consumed in the system equals the amount of electricity produced in the system.
-\item If the consumer of a contract has consumed more electricity than the producer of the contract has produced, the excess consumed electricity is produced by the pure producers in the system.
-\item If a producer produces more electricity than needed during an interval, it is assumed that the electricity is stored in batteries and not part of the settlement process.
-\end{itemize}
-
-Each node in the system has a bill of how much the node owes other nodes in the system, and how much other nodes owe this node. The bills are accumulative and assumed settled at regular intervals, e.g. each month.
-
+Each node in the system has a bill of how much the node owes other nodes in the system, and how much other nodes owe this node. The bills are accumulative and assumed settled at regular intervals, e.g. each month. It is assumed that all nodes with transaction info has one, and only one contract, at any given time. Furthermore, it is assumed that any excess electricity from a seller is stored in battery, and a buyer will get it's electricity from pure producers if a seller can not deliver the sufficient amount at a given time.
 
 \subsection{Consensus}
 The consensus protocol is modeled after the Raft protocol. Five nodes are in charge of the consensus process in the consortium blockchains. The reason why only five nodes should participate in the consensus process is to reduce the message overhead in the system. The consensus process has a randomly selected leader. Any node can be part of the consensus process, and any node can become leader. If a node participating in the consensus goes offline for some reason, another node will take its place. Nodes in the system send their transactions and contracts to the consensus leader, who then initiates the validation process by creating a block. If consensus is reached among the validating nodes, the block is stored in one of the blockchains, depending on if it contains electricity transaction or a smart contract.

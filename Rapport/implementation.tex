@@ -1,11 +1,14 @@
 \chapter{Implementation}
 This chapter describes the implementation of the system in this thesis. The first section details the software used in the implementation. The rest of the chapter describes how the individual modules of the system are implemented.
+%realisering av selve modulene i implemtasjon
+
+
 \section{Software}
 Following is a list of the resources used in this system implementation:
 \begin{itemize}
 \item Python for implementation of the system
 \item Python framework Twisted for network communication
-\item Website? Flask
+\item Flask for web applications
 \end{itemize}
 
 \subsection{Python}
@@ -24,6 +27,7 @@ Some of the main components of the Twisted library are described below:
 \item \textbf{Transport}: A transport is a method that represents the actual connection between the two endpoints in a protocol, e.g. a TCP connection. The transport is used for communication between the two endpoints, as it writes data from one connection to the other.
 \end{itemize}
 
+\subsection{Flask}
 
 \section{Blockchain Modules}
 This section contains descriptions of the modules implemented in the blockchain layer.
@@ -73,12 +77,25 @@ As previously mentioned, leaders send out \textit{append entries} RPCs from the 
 
 If the \textit{append entries} RPC includes a new proposed block, the follower will validate the block and write the block to the log during the next run of the \textit{state machine}. 
 
+
 \section{Application Layer}
 This section includes descriptions of modules implemented in the application layer of the system. 
+
+\subsection{Settlement} \label{settlement}
+Settlement occurs based on existing smart contracts in the system, and is triggered when the parties of the contract have produced and/or consumed electricity. 
+
+Three assumptions were made for the settlement process in the system.
+\begin{itemize}
+\item During any interval, the amount of electricity consumed in the system equals the amount of electricity produced in the system.
+\item If the consumer of a contract has consumed more electricity than the producer of the contract has produced, the excess consumed electricity is produced by the pure producers in the system.
+\item If a prosumer produces more electricity than is consumed by itself or the consumer in the contract, during an interval, it is assumed that the electricity is stored in batteries and not part of the settlement process.
+\end{itemize}
+
+The settlement process is accumulative and based on previous data generated in the system. Each node has a \textit{account} where settlement info is stored. 
 
 \subsection{Smart Contracts}
 Smart contracts enable automatic transfer of assets, once conditions are met. Thus, in contrast to traditional contracts, smart contracts do not only define the terms and conditions of an agreement, they also provide a method for enforcing the agreement.
 %Turing complete
 
 \subsection{User Interface}
-Login for privacy, and graphs for easy monitoring of consumption and production. All information is available in the blockchain, transparency. Tradeoff between privacy and transparency
+The user interface was not integrated with the rest of the system, rather a interface layout was outlined as seen from the consumers perspective. The interface consisted of a web page with two menu options: one for monitoring consumed and produced electricity in real-time; and one to create smart contracts based on prosier availability.

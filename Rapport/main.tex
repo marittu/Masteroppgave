@@ -1,3 +1,4 @@
+\RequirePackage[hyphens]{url}
 \documentclass[pdftex,10pt,b5paper,twoside]{book}
 \usepackage[lmargin=25mm,rmargin=25mm,tmargin=27mm,bmargin=30mm]{geometry}
 \usepackage[utf8]{inputenc}
@@ -15,6 +16,7 @@
 \usepackage{pdfpages}
 \usepackage{titlesec}
 \usepackage{csquotes}
+\usepackage{lmodern}
 \usepackage[hyphens]{url}
 \usepackage[style=numeric, backend=bibtex, sorting=none]{biblatex}
 %\emergencystretch=1em
@@ -40,9 +42,12 @@
 \setcounter{tocdepth}{3}
 
 \let\cleardoublepage\clearpage
+\import{./}{preface.tex}
+\addcontentsline{toc}{chapter}{Preface}
+
+\let\cleardoublepage\clearpage
 \import{./}{abstract.tex}
 \addcontentsline{toc}{chapter}{Abstract}
-
 
 \let\cleardoublepage\clearpage
 \import{./}{sammendrag.tex}
@@ -77,6 +82,8 @@
 \let\cleardoublepage\clearpage
 \import{./}{background.tex}
 \let\cleardoublepage\clearpage
+\import{./}{related_work.tex}
+\let\cleardoublepage\clearpage
 \import{./}{spec.tex}
 \let\cleardoublepage\clearpage
 \import{./}{design.tex}
@@ -88,6 +95,8 @@
 \import{./}{result.tex}
 \let\cleardoublepage\clearpage
 \import{./}{discussion.tex}
+\let\cleardoublepage\clearpage
+\import{./}{conclusion.tex}
 
 
 \let\cleardoublepage\clearpage
@@ -96,7 +105,9 @@
 \end{appendices}
 
 \let\cleardoublepage\clearpage
+\begin{sloppypar}
 \printbibliography
+\end{sloppypar}
 \addcontentsline{toc}{chapter}{Bibliography}
 
 \end{document}
