@@ -43,6 +43,7 @@ class Proposed_blocks_log():
         Returns False if there is a match with index but not term
         Returns None if there is no entry at the index
         """
+
         with open(self.filename, 'r') as f:
             for l in f:
                 line = l.split(',')
@@ -85,7 +86,6 @@ class Proposed_blocks_log():
         """
         Node has entry not matching with the leader
         Deletes conflicting entry
-        TODO: Somewhat inefficient way to do it 
         """
         out_file = 'Log/Blocks/'+str(self.port)+'_blocks_temp.txt'
         with open(self.filename, 'r+') as f, open(out_file, 'w')as out:
@@ -214,7 +214,7 @@ def clean_tx(string):
     """
     Strips string of all extra symbpls
     """
-    strip = " {}()"
+    strip = " {}()\Transactions:"
     new_string = str(string).translate(str.maketrans('', '', strip))
     return new_string
 
@@ -242,11 +242,11 @@ def string_to_block(string):
     timestamp = float(clean_string(string[2].split(':')[1:]))
     new_hash = clean_string(string[3].split(':')[1:])
     transactions = str(clean_tx(string[4:]))
-    transactions = transactions.replace('[\"\'Transactions\':', '').replace('\\n]', '').replace('\"', '')
+    transactions = transactions[4:-2].replace('\"', '')
 
     if transactions == 'None\\n]':
         transactions = None
-    
+
     #print('tx', transactions)
     return Block(index, previous_hash, timestamp, transactions, new_hash)
     

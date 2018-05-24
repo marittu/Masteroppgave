@@ -1,14 +1,3 @@
-"""
-TX shared in local mempool - broadcasted to everyone
-Leader proposes new block
-Followers and candidates verify new block and respond to leader with vote
-(Weigh votes, so nodes with tx in block are more weighted - stake)
-Leader needs 2/3 of votes before broadcasting the new block
-
-Validate TX by checking signature on smart contract or smart contract 
-exists, sequence number, valid coins
-"""
-
 from twisted.internet import reactor
 from twisted.internet.task import LoopingCall
 import time, random, pickle, string
@@ -88,21 +77,9 @@ class Validator():
                         block_term = int(res[1])
                         propose_block = res[2]
                         block_index = propose_block.index
-                msg = {
-                    'msgtype': 'append_entries', 
-                    'term': self.current_term,
-                    'leaderid': self.nodeid, 
-                    'prev_index': index, #index of prev proposed block
-                    'prev_term': prev_term,   #term of prev proposed block
-                    'leader_commit': self.commit_index, #Index of proposed block ready for commiting to chain
-                    'propose_block': propose_block,
-                    'block_term': block_term,
-                    'block_index': block_index
-                } 
 
-                messages.send_to_conn(msg, conn)
-        
-        
+                messages.append_entries(conn, self.current_term, self.nodeid, index, prev_term, self.commit_index, propose_block, block_term, block_index)
+                
 
     def respond_append_entries(self, msg, conn):
         """
@@ -112,10 +89,12 @@ class Validator():
         meaning the follower is not up to date
         Respond to leader with own log info
         """
+
+        #EXTRACT TO SEVERAL FUNCTIONS
         self.reset_election_timeout()
 
         success = True
-        print(msg)
+        #print(msg)
 
         #New leader
         if msg['leaderid'] != self.leader_id:
@@ -134,7 +113,7 @@ class Validator():
         if msg['term'] < self.current_term:
             success = False 
 
-        #interate through log in reverse until index match, if term doesnt match for index - FALSE
+        #interate through log, top-down, until index match, if term doesnt match for index - FALSE
         
         entry = self.proposed_block_log.find_index_term(msg['prev_index'], msg['prev_term'])
         if entry == None:
@@ -157,23 +136,17 @@ class Validator():
             
         if msg['leader_commit'] > self.commit_index:
             self.commit_index = min(msg['leader_commit'], self.last_log_index)
-            print("in consensus", self.commit_index)
             #Commit proposed_block at commit_index (and previous blocks) to blockchain
     
-        msg = { 
-            'msgtype': 'respond_append_entries', 
-            'nodeid': self.nodeid, 
-            'success': success,
-            'current_term': self.current_term,
-            'last_term': self.last_log_term,
-            'last_index': self.last_log_index
-        }
-
-        messages.send_to_conn(msg, conn)
-
-
-    def receive_append_entries_response(self, msg, conn):
+        messages.respond_to_append_entries(conn, self.nodeid, success, self.current_term, self.last_log_term, self.last_log_index)
         
+        
+
+    #RENAME TO UPDATE_NODE_VIEW
+    def receive_append_entries_response(self, msg, conn):
+        """
+        Leader updates view of log of other nodes
+        """
         nodeid = msg['nodeid']
         if msg['success'] == True:
             self.match_index[nodeid] = msg['last_index']
@@ -184,15 +157,9 @@ class Validator():
        
        
     def request_votes(self):
-        #get_log() for prev_log
-        msg = {
-            'msgtype': 'request_vote', 
-            'term': self.current_term, 
-            'candidate_id': self.nodeid, 
-            'last_log_index': self.last_log_index, 
-            'last_log_term': self.last_log_term
-        }
-        messages.broadcast_to_followers(msg, self.connections, self.nodeid)
+        
+        messages.request_votes(self.connections, self.nodeid, self.current_term, self.last_log_index, self.last_log_term)
+        
 
 
     def respond_request_vote(self, msg, conn):
@@ -214,15 +181,7 @@ class Validator():
                 self.voted_for = msg['candidate_id']
                 self.vote_log.write({self.current_term: self.voted_for})
 
-
-        respond_msg = {
-                'msgtype': 'respond_request_vote', 
-                'vote_granted': vote_granted,
-                'node': self.nodeid,
-                'term': self.current_term
-        }
-
-        messages.send_to_conn(respond_msg, conn) 
+        messages.respond_request_vote(conn, vote_granted, self.nodeid, self.current_term)
                 
 
     def receive_vote(self, msg):
@@ -256,6 +215,9 @@ class Validator():
         
 
     def _initialize_views(self):
+        """
+        Leader initializes view of log of other nodes
+        """
         for node in self.connections:
             self.next_index[node] = self.last_log_index + 1 #index of next log entry to send to each node
             self.match_index[node] = 0 #index of highest log entry know to be replicated on server
@@ -268,12 +230,16 @@ class Validator():
         self.voted_for = None
 
     def block_majority(self):
+        """
+        Leader check for majority validation of a block
+        """
         quorum = int((len(self.connections))/2)
         match = 1 #Leader
         for node in self.connections:
             if self.match_index[node] == self.last_log_index:
                 match += 1
-        if match > quorum and match != 1: #cannot commit of only node in network
+        if match > quorum and match != 1: 
+        #cannot commit if only node in network
             self.stop_block_timeout()
             self.commit_index = self.last_log_index
             return True
@@ -320,13 +286,16 @@ class Validator():
     
         print(self.current_term)
         self.vote_log.write({self.current_term: self.voted_for})
-        if len(self.connections) == 1: #Remove possibility to become leader if only one node
+        if len(self.connections) == 1: 
+        #Remove possibility to become leader if only one node
             self._become_leader()
         else:
             self.request_votes()
 
     def valid_signature(self, block):
-        
+        """
+        Verify signatures in contract between two nodes
+        """
         c = contract.split(',')
         no1 = clean_string(c[0])
         no2 = clean_string(c[1])

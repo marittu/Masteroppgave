@@ -1,9 +1,10 @@
 from peer import PeerManager
-from blockchain import Block, Blockchain
+from block import Block
 
 from consensus import Validator
 from storage import Proposed_blocks_log, Blockchain_log, clean_string, string_to_block
 from transactions import get_transaction
+from settlement import settle
 import messages
 
 import time, random, pickle
@@ -13,15 +14,11 @@ from twisted.internet.task import LoopingCall
 
 PING_INTERVAL = 10
 TIMEOUT = 3 * PING_INTERVAL
-MAX_PEERS = 5
 
 FOLLOWER = 1
 CANDIDATE = 2
 LEADER = 3
 
-"""
-CORNER CASE - NEW NODES AND ELECTION HAPPENING AT THE SAME TIME
-"""
 
 class Node(PeerManager):
     def __init__(self, host_ip, hostport, nodeid, config_log, public_key, private_key):
@@ -43,11 +40,10 @@ class Node(PeerManager):
         self.transaction_file = 'Testdata/'+str(hostport)+'.csv'
         self.i = 0
         self.validator = Validator(self.nodeid, self.reactor, self.connections, self.blockchain_log, self.proposed_block_log, hostport)
-        self.get_head_block_and_index() #TODO; MAKE OWN FUNCTION ONLY RUNNING AT INIT
+        self.get_head_block() 
         self.validator.commit_index = self.blockchain_log.last_index()
-        #self.wallet/bill iou
-        LoopingCall(self.state_machine).start(2) 
-        LoopingCall(self.get_transaction).start(10)
+        LoopingCall(self.state_machine).start(1) 
+        LoopingCall(self.forward_transaction).start(3)
         
         
     def state_machine(self):
@@ -57,23 +53,20 @@ class Node(PeerManager):
         Write new updates to log 
         """
         if self.validator.state == LEADER:
-            
-            transaction = [] 
+    
             if len(self.transactions) == 4:# or smart_contract: 
-                if True:#settle(self.transactions):
-                    propose_block = Block(transactions=self.transactions)
+                settle(self.transactions, self.time_of_last_transaction)
+                propose_block = Block(transactions=self.transactions)
 
-                    self.transactions = []
-                    self.get_head_block_and_index()
-                    propose_block.propose_block(self.head_block)
+                self.transactions = []
+                self.get_head_block()
+                propose_block.propose_block(self.head_block)
             else:
                 propose_block = None 
 
             self.validator.append_entries(propose_block)
             if propose_block is not None:
-                self.validator.last_log_index += 1
-                self.validator.last_log_term = self.validator.current_term
-                self.validator.proposed_block_log.write(self.validator.current_term, self.validator.last_log_index, propose_block)
+                self.add_block_to_log(propose_block, self.validator.current_term)
                 self.validator.start_block_timeout() 
             
             if self.validator.block_majority():
@@ -84,46 +77,30 @@ class Node(PeerManager):
         
         if self.validator.state == FOLLOWER:
             if self.validator.propose_block is not None:
-                #MAEK VALIDATE BLOCK AND ADD BLOCK METHOD
-                self.get_head_block_and_index()
+                self.get_head_block()
                 if self.validator.propose_block.validate_block(self.head_block):
-                    print('NEW BLOCK')
-                    self.validator.last_log_index += 1
-                    self.validator.last_log_term = self.validator.block_term
-                    self.validator.proposed_block_log.write(self.validator.block_term, self.validator.last_log_index , self.validator.propose_block)
+                    print('NEW BLOCK: ', self.validator.propose_block.index)
+                    self.add_block_to_log(self.validator.propose_block, self.validator.block_term)
+                    
                 else:
                     if self.validator.propose_block.index == self.validator.last_log_index + 1:
                         self.validator.proposed_block_log.update_index()
                     
         #MAKE ADD BLOCK TO BLOCKCHAIN METHOD
         if self.validator.commit_index > self.blockchain_log.last_index():
-            index = self.blockchain_log.last_index() + 1
-            while index <= self.validator.commit_index:
-                block = self.validator.proposed_block_log.get_block(index)
-                if block is not None:
-                    self.blockchain_log.write(block)
-                    index = self.blockchain_log.last_index() + 1 
-                else:
-                    break
+            self.add_block_to_blockchain()
+
         
-    def get_transaction(self):
+    def forward_transaction(self):
         if self.validator.leader_conn:       
             tx = get_transaction(self.transaction_file, self.time_of_last_transaction)
-            self.time_of_last_transaction = tx[0]
-            msg = {
-            'msgtype': 'tx',
-            'nodeid': self.nodeid,
-            'time': tx[0],
-            'consumed': tx[1],
-            'produced': tx[2]
-
-            }
-            messages.send_to_conn(msg, self.validator.leader_conn)
-
-
-    def get_head_block_and_index(self):
+            self.time_of_last_transaction = tx[0] 
+            
+            messages.send_transaction_to_leader(self.validator.leader_conn, self.nodeid, tx)
+            
+    def get_head_block(self):
         """
-        Read last index in log and head block
+        Get head block and index and term of block from proposed_block_log
         Create log and write gensis block to log if it does not exist
         """
         try:
@@ -132,8 +109,8 @@ class Node(PeerManager):
             self.validator.last_log_term = int(clean_string(line[1]))
             self.head_block = string_to_block(line[2:])
              
-        except:
-            print("except in get block and index")
+        except: #MAKE EXCEPTION`?
+            print("Writing Genesis")
             self.write_genesis()
 
     def write_genesis(self):
@@ -144,10 +121,26 @@ class Node(PeerManager):
         self.validator.proposed_block_log.write(0, self.validator.last_log_index, self.head_block)
         self.blockchain_log.write(self.head_block)
 
+    def add_block_to_blockchain(self):
+        index = self.blockchain_log.last_index() + 1
+        while index <= self.validator.commit_index:
+            block = self.validator.proposed_block_log.get_block(index)
+            if block is not None:
+                self.blockchain_log.write(block)
+                index = self.blockchain_log.last_index() + 1 
+            else:
+                break
+
+    def add_block_to_log(self, block, term):
+        self.validator.last_log_index += 1
+        self.validator.last_log_term = term
+        self.validator.proposed_block_log.write(term, self.validator.last_log_index , block)
+    
     def consensus_message(self, msg_type, msg, conn):
         """
         Handles consensus messages from other nodes
         """
+
         if msg_type == "append_entries":
             self.validator.respond_append_entries(msg, conn)
         elif msg_type == "respond_append_entries":
