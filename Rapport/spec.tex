@@ -1,7 +1,8 @@
-\chapter{Functional Specifications} 
+\chapter{Functional Specifications} \label{spec}
 This chapter describes the functional specifications of a system for settlement in a microgrid. The specifications are divided into three categories: application from the user's perspective; application from computer's perspective; and the blockchain.
 
-Each node consists of a smart meter for registering consumption and production of electricity. The smart meter is connected to the node's computer. The computer receives data from the smart meter and processes the data before passing it on to the blockchain, which also runs on the computer. Nodes are uniquely identified by their ID.  
+Each node consists of a smart meter%ams (automatic electricity meter)
+ for registering consumption and production of electricity. The smart meter is connected to the node's computer. The computer receives data from the smart meter and processes the data before passing it on to the blockchain, which also runs on the computer. Nodes are uniquely identified by their ID.  
 
 The system consists of the following participants:
 
@@ -13,12 +14,12 @@ The system consists of the following participants:
 
 Having power delivered by public producers is a costly solution, and should be avoided. Participants can be discouraged from this solution by setting extreme prices on electricity from these sources.
 %SCALABILITY
-\section{Application From User Perspective} \label{user}
+\section{User Interface} \label{user}
 This section describes how the user interacts with the system.
 
 \begin{enumerate}
 \item Users connect to existing nodes on the Network, given an IP address and a port number. The user also chooses a port to run the application on. 
-\item A website lets users set up smart contracts and monitor production and consumption of electricity. 
+\item A website lets users set up smart contracts and tracks their energy flow. 
 \item The website requires a login where users are identified by their node ID. 
 \item Prosumers with surplus electricity to sell, put up their availability on the website.
 \item Consumers who want to purchase electricity can query available producers and initiate a smart contract.
@@ -39,7 +40,7 @@ A user who produces excess electricity can choose to sell this electricity to ne
 Users wishing to purchase electricity from their neighbors can connect to the microgrid network. After logging in to the website with their given node ID and password, they can query other users for available electricity. The consumer can set up a smart contract with a prosumer. Consumers can at any time log in to the website and monitor how much electricity they consume at minute intervals, and at what price. If the consumer decides to use less energy than what was specified in the contract, he or she must pay a fee corresponding to what the producer is losing in profit.
 
 
-\section{Application From Computer Perspective} \label{computer}
+\section{Application Interface} \label{computer}
 This section describes how the computer handles incoming data from the users and connected smart meters, forwarding the data to the blockchain, and settling the transaction between users.
 \begin{enumerate}
 \item The computer is connected to a smart meter and receives information about a node's consumption and production of electricity at periodic intervals. 
@@ -60,16 +61,15 @@ When new measurements are received from the smart meter, the readings become ava
 \subsubsection*{New Contract}
 When two users initiate a contract through the user interface on the web site, it is passed to the blockchain for validation and storage. When new meter readings are registered, the system iterates through valid contracts to settle the new transactions
 
-\section{Blockchain}
+\section{Blockchain} \label{blockspec}
 The blockchain acts as the back-end service to support the requirements given in sections \ref{computer} and \ref{user}.
 \begin{enumerate}
-\item There are two types of blockchains in the system, one for storing electricity transactions and one for storing smart contracts.
-\item The application sends two types of input to the blockchains, a smart contract between two users and electricity transactions. They are stored in their respective blockchains.
+\item The application sends two types of input to the blockchains, a smart contract between two users and electricity transactions. There are two types of blockchains. One for storing smart contracts, and one for storing electricity transactions.
 \item The blockchains are distributed between all the nodes in the network. 
 \item The nodes broadcast their individual transactions across the network, while new smart contracts are sent directly to the consensus leader.
 \item The leader of the blockchain proposes a new blocks when data is available.
 \item The proposed block is broadcasted to the consensus nodes, who validate the block and the transactions.
-\item If a majority of the nodes deem the block valid, it is broadcasted to the whole network and stored in the blockchain.
+\item If a majority of the nodes deem the block valid, all nodes will add the new block to their blockchain.
 \item When the application is settling new transactions, valid smart contracts in the blockchain are triggered and used in the settlement process. 
 \end{enumerate}
 
@@ -82,9 +82,6 @@ When the smart contract is passed to the blockchain module, it is added to a blo
 \subsubsection*{Electricity Transactions}
 New electricity transactions from all network nodes are passed to the blockchain layer every minute. New transactions from each node are broadcasted throughout the network. The current leader adds all new transactions to a block, which is validated by the nodes before it is stored in the blockchain. 
 
-
-%Vet ikke hvem du får strøm av 
-\newpage
 
 %\section{Technical Specifications}
 
@@ -114,8 +111,6 @@ New electricity transactions from all network nodes are passed to the blockchain
 
 %The contracts will be stored in the blockchain, and automatically executed when the right conditions are met. A token contains a state indicating whether it is locked in a smart contract or not. An important reason for using smart contract functionality is that there are two assets being transferred in this system: tokens and electricity. In a cryptocurrency blockchain with only one asset, the sender of the asset initiates the transaction. As a result of the bi-directional transfer of assets, the smart contract is used to ensure that neither side can withdraw from the transaction when it is in progress. 
 
-%\section{Application Interface Specification}
-%The current electricity price is visible to the consumers/prosumers at all times, and is updated every minute. Payment for consumed electricity will be handled by consumers making deposits into an account. Deposits will be made with actual currency (e.g. USD or NOK) and be converted into tokens (not to be confused with cryptocurrency), where the token value directly correlates to value of the currency with minute resolution. The tokens can at any point be withdrawn from the account. Tokens are transferred from consumer to producer when electricity is bought by consumer. Some central agency(?) needs to handle the distribution and conversion of tokens to/from actual currency
 
 %
 

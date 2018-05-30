@@ -4,7 +4,7 @@ This chapter mainly contains relevant background theory on blockchains. The chap
 \section{Microgrids}
 A microgrid is a local power grid that may or may not be connected to the main grid. The microgrid can either work as an extension of the main power grid, or operate in \enquote{island mode} and function autonomously. A formal definition of a microgrid is as follows: 
 
-\enquote{\textit{A Microgrid is a group of interconnected loads and distributed energy resources within clearly defined electrical boundaries that acts as a single controllable entity with respect to the grid.}} \cite{micro_securicon}
+\enquote{\textit{A Microgrid is a group of interconnected loads and distributed energy resources within clearly defined electrical boundaries that acts as a single controllable entity with respect to the grid}} \cite{micro_securicon}.
 
 Microgrids usually include renewable energy sources, such as wind generators, small hydro power generation, and photovoltaic solar panels, that are locally grouped together. Microgrids may also include generators and batteries to ensure reliability \cite{general_microgrid}. By placing power generation and power usage closer together, efficiency will be increased and transmission losses reduced \cite{Microgrid_konashevych}. 
 
@@ -12,7 +12,8 @@ A key benefit of the microgrid, is the ability of being self-sufficient in case 
 
 Places that are not connected to the main grid have very expensive solutions for getting power. This can typically be rural places or islands. They may also benefit from microgrids. The ability to operate in island-mode will provide better electricity services at a lower cost than e.g. importing diesel \cite{abb}.
 
-INCLUDE SOME STUFF ON HOW ELECTRONS TRAVEL ON THE GRID 
+\subsection{Electrical Transmission}
+In microgrids, just like in the traditional power grid, there is no way of telling where consumed electrons are actually generated. Once a power plant or another power producer put electricity in to the grid, the electrons from all sources are mixed together before they are transferred to consumers \cite{timneypower}. The electricity sources are indistinguishable. In a microgrid, this means that even if producer A has a contract with consumer B to deliver electricity, consumer B is not necessarily using the electrons that producer B has generated. If producer C is also generating electricity to the gird, there is a chance that consumer B is actually consuming the electrons from producer C. Electrons in the grid always flow from source (generators) to sink (loads), where electricity is being consumed \cite{tracing}. 
 
 \section{Introduction to Blockchain} \label{blockchain_basics}
 A blockchain is a decentralized ledger, distributed over a network of nodes. Transactions in the network are stored in blocks which are linked together as a chain, creating the blockchain. It was first introduced by Satoshi Nakamoto with the Bitcoin application \cite{Nakamoto_bitcoin}.
@@ -21,15 +22,28 @@ The blockchain is primarily used to transfer assets between users. In contrast t
 
 The following description of the blockchain technology is based on the Bitcoin blockchain proposed in Nakamotos whitepaper from 2008\cite{Nakamoto_bitcoin}. Many of the features from the Bitcoin blockchain hold true for most blockchains. However, there are many variations of blockchain implementations, due to public/private configurations, consensus models etc. These differences will be described later in the chapter.
 
-When a node transfers an asset to another node, it creates a transaction. The transaction contains: one or more inputs; one or more outputs; and a digital signature. In Bitcoin, an input is a previously received and unspent output, containing the amount of bitcoins. Multiple inputs can be added together to create a larger transaction. The inputs are used completely, so if the amount does not add up to the wanted output, multiple outputs can be used so that the change is sent back to the owner. This is because transactions must reference an output, and each output can only be referenced once. Thus, the exact ownership of every asset can be pinpointed to a user in the network, based on the previous transactions. In order for a transaction to occur, it must be proved that the asset has not been previously spent by the current owner. Thus, there is no way to double spend assets. % picture for discription
+When a node transfers an asset to another node, it creates a transaction. The transaction contains: one or more inputs; one or more outputs; and a digital signature. In Bitcoin, an input is a previously received and unspent output, containing the amount of bitcoins. Multiple inputs can be added together to create a larger transaction. The inputs are used completely, so if the amount does not add up to the wanted output, multiple outputs can be used so that the change is sent back to the owner. This is because transactions must reference an output, and each output can only be referenced once. Thus, the exact ownership of every asset can be pinpointed to a user in the network, based on the previous transactions. In order for a transaction to occur, it must be proved that the asset has not been previously spent by the current owner. Thus, there is no way to double spend assets.
 
-Transactions are validated through digital signatures, proving the authenticity of a message, by using public and private keys. Each node can obtain a random private key.  The recipient node sends the hash of its public key to the node initiating the transaction. The public key, together with the message is hashed together, and used to create a digital signature, thus providing a unique signature for every transaction. %figure
-The transaction can then be claimed by the node in possession of the corresponding private key. Thus, in order to use a previously obtained output as an input, it must be verified by the node's private key. The use of digital signatures ensures that transactions can traverse the network without being altered, as even the smallest change will cause a signature to no longer be valid. Since every transaction is visible to every node on the network, anonymity is important as it becomes (nearly) \cite{ip} impossible to find the true identity of the owner. A new key pair can be generated for every transaction to increase anonymity.
+Transactions are validated through digital signatures, proving the authenticity of a message, by using public and private keys. Each node can obtain a random private key, and a corresponding public key derived from the private key. If node A wants to send a Bitcoin to node B, it must use B's public key, which acts as the address to B's Bitcoin wallet. Node A creates a digital signature of the transaction with its private key. The validity of the transaction can then be confirmed using A's public key. When the transaction is confirmed, the Bitcoin can only be spent by the person in possession of the private key corresponding to B's public key. This 
+transaction is illustrated in figure \ref{fig:sign}. The use of digital signatures ensures that transactions can traverse the network without being altered, as even the smallest change will cause a signature to no longer be valid. 
+
+\begin{figure}[!htb]
+\centering
+	\includegraphics[width=1\textwidth]{Images/sign}
+	\caption{Digital signature in Bitcoin transaction.}
+	\label{fig:sign}
+\end{figure}
 
 A miner stores multiple pending and unconfirmed transaction together to create a block. The block consists of the transactions, as well as the block header. The block header usually contains: a reference to the previous block in the chain, namely the hash of the previous block; a timestamp for when the new block is created; and a nonce and a target used to calculate the hash of the new block. 
 
-When the hash of the new block is found, the block is broadcasted to the rest of the network. Every node on the network validates the block, before they start working on the next block. Validation is an easy task, once the hash is found. If several miners find the solution to the next block at the exact same time, a fork is created. 
-%Picture of block, header and chain. Picture of fork 
+When the hash of the new block is found, the block is broadcasted to the rest of the network. Every node on the network validates the block, before they start working on the next block. Validation is an easy task, once the hash is found. If several miners find the solution to the next block at the exact same time, a fork is created. This sequence is illustrated in figure \ref{fig:blocks}
+\begin{figure}[!htb]
+\centering
+	\includegraphics[width=1\textwidth]{Images/blocks}
+	\caption{Connection between blocks.}
+	\label{fig:blocks}
+\end{figure}
+
 A fork means that there exists  two (or more) different versions of the blockchain in the network. Due to network latencies, nodes in the network will receive different broadcasted messages at different times. Therefore, nodes might have different versions of the blockchain. The miners start working on the next block based on the one they received first, while storing the other version in case that fork becomes longer \cite{Nakamoto_bitcoin}. The fork is resolved when one side of the fork becomes longer than the other(s), which will most likely happen when the next block is created. The side with the longest chain always wins because it is backed by the most work. All the nodes in the network immediately look to the longest chain as the valid version of the blockchain. The transactions in the discarded block go back into the pool of the pending transactions, waiting to be mined in a block. Once a transaction is part of the blockchain, it is irreversible. Due to the hash functions, even the slightest alteration in a transaction will be detected, and the transaction will be deemed as non-valid. Thus, a transaction cannot be changed or reverted once it is part of the blockchain. There is however some need for caution. As previously mentioned, transactions in discarded blocks go back to being unconfirmed. If the other side of the fork contains a transaction attempting to double spend the asset, the initial transaction might no longer be valid. 
 
 Say, for instance node A sends two bitcoins to node B, while also sending the same two bitcoins to itself, only one of these transactions can be valid. Once a transaction is stored in the blockchain, the two bitcoins are referenced as a new unspent output, and the other transaction is no longer valid. This is intentional behavior in the blockchain, as it solves the problem of double spending which is usually what a trusted third-party, e.g. a bank, is needed for. The problem occurs when there is a fork. If node B receives the bitcoins as a payment for some goods, and ships the goods once the transaction is part of the blockchain, while node A is simultaneously working on another fork in the blockchain containing the transaction sending the two bitcoins to itself, node B will lose the payment for the goods if the fork node A is working on becomes longer. It is therefore a good policy to wait until the block containing the transactions has multiple successors before asserting the transaction final.
@@ -229,7 +243,7 @@ Out of the n nodes in the consensus model, one is the primary, which receives re
 Hyperledger Fabric provides consensus as a modular component in the system, supporting various kinds of consensus models. One module utilizes PBFT to order transactions in the system, thus ensuring that all peers have the same list of transactions in their ledger \cite{hyperledger, hyperledger_pbft}. 
 
 \subsection{Summery of Consensus Models}
-\begin{table}[htb] 
+\begin{table}[!ht] 
   
   \centering
   \captionof{table}{Consensus models}
@@ -299,8 +313,6 @@ An example of an application built on top of the Bitcoin blockchain is Lighthous
 \subsection{Ethereum}
 Ethereum is an open-source blockchain application platform \cite{ethereum.org} proposed by co-founder Vitalik Buterin \cite{Buterin} in 2013 in his white paper \cite{ether_white_paper}. The decentralized platform runs smart contracts, which are unstoppable application transactions.  
 
-A smart contract is code enabling self-enforcing applications, through a pre-defined set of rules in the code. The smart contract code is stored in blocks which in turn become part of the blockchain. The smart contracts are used to establish rules between peers. A new programming language, solidity \cite{ethereum_docs}, was developed for creating smart contracts.
-
 Inspired by Bitcoin, Buterin came up with a platform to expand the limited financial use cases available in the Bitcoin blockchain. Ethereum is a programable blockchain. Protocols run on the Ethereum Virtual Machin (EVM) \cite{ethereum_docs}. Applications are created by users in the Turing complete programming language, solidity, and executed on the EVM. When an operation is executed on an EVM, it is simultaneously executed on all nodes in the network.
 
 Applications on Ethereum can either be financial, non-financial or semi-financial. Like Bitcoin, Ethereum also has a native crypto currency, Ether. However, unlike Bitcoin, Ether has a purpose other than simply being a crypto currency. In order to run applications on the Ethereum blockchain, a small fee, or gas price, is required. This is to ensure efficient and economical code, as each computational step in the code requires a certain amount of gas \cite{ether_white_paper}.
@@ -308,10 +320,6 @@ Applications on Ethereum can either be financial, non-financial or semi-financia
 Whereas Bitcoin only allows users to interact with the blockchain through a set of pre-defined operations, Ethereum allows users to create operations with arbitrary complexity.
 
 Several decentralized applications have been created on top of the Ethereum blockchain. Among these is the Brooklyn Microgrid, which will be further discussed in section \ref{Brooklyn}. Other applications include Decentralized News Network \cite{DNN}, where factual news reports are rewarded with tokens and free of censorship; uport \cite{uport}, an identity system for the decentralized web where users can store their identity and credentials on the Ethereum blockchain.
-
-%Ethereum was designed as a smart contract platform. Its origin is actually linked to a critique made by Vitalik Buterin on bitcoin as a very limited smart contract platform. The Ethereum Virtual Machine (EVM) is where smart contracts run in Ethereum. It provides a more expressive and complete language than bitcoin for scripting. In fact, it is a Turing Complete programming language. A good metaphor is that the EVM is a distributed global computer where all smart contracts are executed.
-
-%Given that smart contracts run in the EVM, there must be a mechanism to limit the resources used by each contract. Every single operation that is executed inside the EVM is actually simultaneously executed by every node in the network. This is why gas exists. An Ethereum transaction contract code can trigger data reads and writes, do expensive computations like using cryptographic primitives, make calls (send messages) to other contracts, etc. Each of these operations have a cost measured in gas, and each gas unit consumed by a transaction must be paid for in Ether, based on a gas/Ether price which changes dynamically. This price is deducted from the Ethereum account sending the transaction. Transactions also have a gas limit parameter that is an upper bound on how much gas the transaction can consume, and is used as a safe-guard against programming errors that could deplete an account’s funds. You can read more about gas here.
 
 \subsection{Hyperledger}
 Hyperledger consists of over 100 members, including companies such as IBM, Intel, Samsung, J.P. Morgan, American Express and Airbus \cite{hyperledger}. It is an open-source platform for blockchains hosted by the Linux Foundation. It consists of multiple blockchains, including Hyperledger Fabric from IBM and Hyperledger Sawtooth from Intel. 
@@ -347,43 +355,38 @@ Table \ref{tab:commercial_comprison} summarizes the key features of the previous
    Blockchain  & \textbf{Bitcoin} & \textbf{Ethereum} & \textbf{Hyperledger} \\
     & & & \textbf{Fabric} \\ 
    \hline
-   Founded & 2009 & 2015 & 2017 \\
+   \textbf{Founded} & 2009 & 2015 & 2017 \\
    	\hline
-   Crypto currency & Bitcoin & Ether & Non \\
+   \textbf{Crypto currency} & Bitcoin & Ether & Non \\
    	\hline
-   Consensus & PoW & PoW, PoS & PBFT \\
+   \textbf{Consensus} & PoW & PoW, PoS & PBFT \\
    	\hline
-   Permissioned & Permissionless & Permissionless & Permissioned \\
+   \textbf{Permission} & Permissionless & Permissionless & Permissioned \\
    	\hline
-   Public access & Public & Public and Private & Private \\
+   \textbf{Public access} & Public & Public and Private & Private \\
    	\hline
-   Smart contracts & Non & Smart Contracts & Chaincode \\
+   \textbf{Smart contracts} & Non & Smart Contracts & Chaincode \\
    	\hline
-   Language & C++ & Go, C++, Python & Go, Java \\
+   \textbf{Language} & C++ & Go, C++, Python & Go, Java \\
    	\hline
 
 \end{tabular}
 \end{center}
 
 \section{Smart Contracts}
-AVSNITT IKKE FULLFØRT
-Nick Szabo 1996
-Constant read-only contracts, or transactional contracts
-A smart contract is a software program that adds layers of information onto digital transactions being executed on a blockchain. It allows for more complex transactions than simply exchanging digital tokens for a product or service.
+The idea of smart contracts was first proposed by Nick Szabo in 1996, stating that \textit{\enquote{Smart contracts combine protocols, users interfaces, and promises expressed via those interfaces, to formalize and secure relationships over public networks. This gives us new ways to formalize the digital relationships which are far more functional than their inanimate paper-based ancestors. Smart contracts reduce mental and computational transaction costs, imposed by either principals, third parties, or their tools  \cite{szabo}}}.
 
-Third party - executed based on events
+Smart contracts can be compared to vending machines in regards to their ability to self-execute given that the right terms are met. For instance, a vending machine will only provide the user with the goods, given that the purchased item is in stock and that the user has put in enough money. Just like with smart contracts, it is an event based mechanism that is executed without the need of a third party. 
 
-vending machine metaphor 
+The Ethereum blockchain was built with smart cotnracts as the main objective. In this case, a smart contract is code which enable self-enforcing applications, through a pre-defined set of rules in the code. The smart contract code is stored in blocks which in turn become part of the blockchain. The smart contracts are used to establish rules between peers. In order to be able to create Turing complete \footnote{A Turing complete programming language is one that can solve any problem that a Turing machine can.} contracts, a new programming language, solidity \cite{ethereum_docs}, was developed for use on the Ethereum platform. The software program adds layers of information onto digital transactions being executed on a blockchain. It allows for more complex transactions than simply exchanging digital tokens for a product or service.
 
-A smart contract can only be as smart as the people coding taking into account all available information at the time of coding.
-While smart contracts have the potential to become legal contracts if certain conditions are met, they should not be confused with legal contracts accepted by courts and or law enforcement. However, we will probably see a fusion of legal contracts and smart contracts emerge over the next few years as the technology becomes more mature and widespread and legal standards are adopted.
+However, smart contracts are not without issues. The Decentralized Autonomous Organization (DAO), an entity based on Ethereum, implemented a crowd funding platform that raised \$ 150 million. Due to shortcomings in the implementation of the contracts, hackers were able to withdraw \$ 60 million from the funds \cite{dao}. This shows that smart contracts can only be as smart as the people coding them. Other issues include the difficulties to update or alter contracts once they are stored on the blockchain, due to their immutable properties. If a bug in the contract is detected, it is not easily patched.   
 
-Inherit properties of the blockchain - immutable and distributed
-
-\begin{enumerate}
-\item Pre-defined contract: terms established by counter-parties, conditions for execution
-\item Events: trigger contract execution, e.g. transaction initiated or information received
-\item Execute and value transfer: terms of contract dictate movement of value based on conditions met
-\item Settlement: digital assets on chain are automatically settled; physical assets - changes to accounts on the ledger will match off-chain settlement instructions
-\end{enumerate}
+In summary, smart contracts are just computer code that is stored on the blockchain, and runs when the right conditions occur. The key characteristics can be summarized as follows: 
+\begin{itemize}
+\item Contracts consist of pre-defined terms and contract-parties.
+\item Contract execution is triggered by events, such as received transaction information.
+\item Terms of contract dictate where to move value when terms are met
+\item Digital assets are automatically settled on the chain once a contract is executed.
+\end{itemize}
 

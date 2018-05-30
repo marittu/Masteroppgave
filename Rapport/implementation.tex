@@ -9,6 +9,7 @@ Following is a list of the resources used in this system implementation:
 \item Python for implementation of the system
 \item Python framework Twisted for network communication
 \item Flask for web applications
+\item ECDSA for digital signatures and verification
 \end{itemize}
 
 \subsection{Python}
@@ -28,9 +29,13 @@ Some of the main components of the Twisted library are described below:
 \end{itemize}
 
 \subsection{Flask}
+Flask is a microframework for web development written in Python \cite{flask}. Flask is a lightweight WSGI (Web Server Gateway Interface) web application framework that is  designed for quick development. The Flask API is easy to use due to the frameworks extensive documentation, and due to the fact that there are no additional tools or libraries needed.
 
-\section{Blockchain Modules}
-This section contains descriptions of the modules implemented in the blockchain layer.
+\subsection{ECDSA}
+The ECDSA library is an implementation of the cryptography algorithm written in Python \cite{ecdsa}. The library creates key pairs for signing messages and verifying the signatures, based on the ECDSA algorithm. Signatures are created by using the private signing key on the message that is to be signed. The signature is verified by using the public verifying key, which corresponds to the signing key. The verification method ensures that the unsigned message is the same as the message verified by the verifying key after it is signed with the signing key, or raises a \textit{BadSignatureError}.
+
+\section{Blockchain Layer}
+This section describes the main modules implemented in the blockchain layer.
 
 \subsection{Block Module}
 The block module consists of a \textit{Block} class. The attributes of the class are the index of the block, which is the number of the block in the blockchain where the genesis block starts at 0; the hash of the block immediately preceding the block; a timestamp of when the block was created; the transactions included in the block; and the new hash of the block. 
@@ -55,12 +60,13 @@ Other messages received are processed in the factory, and further handled by the
 
 
 \subsection{Node Module}
-%Make float chart
 The node module consists of a \textit{Node} class, which is a subclass of the \textit{PeerManager} class. The main component of the \textit{Node} class is the state machine, which is triggered by the reactor making a \textit{LoopingCall} at periodic intervals. 
 
 Every time the \textit{state\textunderscore machine} method is executed, the network leader sends out an \textit{append entries} RPC to all its followers. This lets the followers know that the leader is still operating. If new transactions are available, the leader creates a new block including these transactions, and proposes the block to its followers. If a follower finds a block valid, its stores the block in its log of proposed blocks during the next execution of the \textit{state machine} method. 
 
 The leader keeps a timer on the proposed block. If a timeout occurs before a majority has validated and accepted the block, the leader steps down, and a new election for a leader will start once the \textit{leader election timeout} occurs. However, if the majority validates and accepts the block before the timeout occurs, the leader will add the block to the blockchain, and notify its followers to do the same. 
+
+%TODO Make float chart
 
 \subsection{Consensus Module}
 The consensus module used in this system is Raft. 
@@ -82,16 +88,39 @@ If the \textit{append entries} RPC includes a new proposed block, the follower w
 This section includes descriptions of modules implemented in the application layer of the system. 
 
 \subsection{Settlement} \label{settlement}
-Settlement occurs based on existing smart contracts in the system, and is triggered when the parties of the contract have produced and/or consumed electricity. 
+Settlement occurs based on existing smart contracts in the system. The protocol is triggered by the blockchain leader every time there is new transaction information in the system that has been verified and added to a block in the blockchain. The settlement algorithm that is implemented is fairly naive, and based around three assumptions given in section \ref{settlement_1}. An outline of the algorithm can be seen in Algorithm \ref{alg:settle}.
 
-Three assumptions were made for the settlement process in the system.
-\begin{itemize}
-\item During any interval, the amount of electricity consumed in the system equals the amount of electricity produced in the system.
-\item If the consumer of a contract has consumed more electricity than the producer of the contract has produced, the excess consumed electricity is produced by the pure producers in the system.
-\item If a prosumer produces more electricity than is consumed by itself or the consumer in the contract, during an interval, it is assumed that the electricity is stored in batteries and not part of the settlement process.
-\end{itemize}
+\begin{algorithm}[!htb]
+\DontPrintSemicolon
+\SetAlgoLined
+\KwResult{walled accounts for all nodes updated}
+\SetKwData{seller sold}
+\SetKwData{buyer bought}
+\BlankLine
 
-The settlement process is accumulative and based on previous data generated in the system. Each node has a \textit{account} where settlement info is stored. 
+\ForEach{buyers and sellers in all contracts}{
+ 	\uIf{seller sold less than 0}{	
+		seller bought required electricity from pure producer\\
+		buyer bought required electricity from pure producer
+ 	}
+ 	\uElseIf{seller sold is 0 and buyer bought is more than 0}{
+ 	buyer bought all electricity from pure producer}
+ 	\uElse{
+		\uIf{seller sold more than buyer bought}{
+			buyer bought all required electricity from seller\\
+			assume excess energy stored on battery	
+		}
+		\uElse{
+			buyer bought all electricity seller sold\\
+			\uIf {buyer required more electricity}{
+				buyer bought required electricity from pure producer		
+			}
+		}	 
+ 	}
+}
+\caption{Naive settlement algorithm}
+\label{alg:settle}
+\end{algorithm}
 
 \subsection{Smart Contracts}
 Smart contracts enable automatic transfer of assets, once conditions are met. Thus, in contrast to traditional contracts, smart contracts do not only define the terms and conditions of an agreement, they also provide a method for enforcing the agreement.
